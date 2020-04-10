@@ -12,10 +12,11 @@ class LikeService {
     @Autowired
     lateinit var client: MethodsClient
 
-    fun processLike(fromUser: UserId, toUser: UserId, likeString: String) {
+    fun processLike(fromUser: UserId, toUser: UserId, likeString: String, channelId: String) {
         println("user $fromUser send $likeString to $toUser")
         client.chatPostMessage {
             it.text("User ")
+                .channel()
                 .username(fromUser)
                 .text(" sent $likeString to ")
                 .username(toUser)

@@ -23,6 +23,7 @@ class MessageService {
 
     fun processMessage(message: MessageEvent) {
 
+        val currentChannel = message.channel
         val currentUser = message.user
         message.blocks.forEach { block ->
             if (block is RichTextBlock) {
@@ -39,7 +40,7 @@ class MessageService {
                         }
                         is RichTextSectionElement.Text -> {
                             if (shouldCheckTextField && blockContainsIncrementLogic(innerPart.text)) {
-                                likeService.processLike(currentUser, userId!!, innerPart.text)
+                                likeService.processLike(currentUser, userId!!, innerPart.text, currentChannel)
                             }
                         }
                     }
