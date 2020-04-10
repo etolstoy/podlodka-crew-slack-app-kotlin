@@ -16,7 +16,7 @@ class LikeService {
         println("user $fromUser send $likeString to $toUser")
         client.chatPostMessage {
             it.text("User ")
-                .channel()
+                .channel(channelId)
                 .username(fromUser)
                 .text(" sent $likeString to ")
                 .username(toUser)
