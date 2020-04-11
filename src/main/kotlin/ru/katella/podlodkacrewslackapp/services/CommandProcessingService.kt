@@ -20,28 +20,30 @@ class CommandProcessingService {
         println("user $fromUser send $command to $toUser")
 
 
-        val fromUserSectionElement = RichTextSectionElement.User
-            .builder()
-            .userId(fromUser)
-            .build()
-        val textSectionElement = RichTextSectionElement.Text
-            .builder()
-            .text(" sent $command to ")
-            .build()
-        val toUserSectionElement = RichTextSectionElement.User
-            .builder()
-            .userId(fromUser)
-            .build()
-        val blockElement = RichTextSectionElement
-            .builder()
-            .elements(arrayListOf(fromUserSectionElement, textSectionElement, toUserSectionElement))
-            .build()
-        val blockElements = arrayListOf<BlockElement>(blockElement)
-        val blocks = arrayListOf<LayoutBlock>(RichTextBlock.builder().elements(blockElements).build())
+//        val fromUserSectionElement = RichTextSectionElement.User
+//            .builder()
+//            .userId(fromUser)
+//            .build()
+//        val textSectionElement = RichTextSectionElement.Text
+//            .builder()
+//            .text(" sent $command to ")
+//            .build()
+//        val toUserSectionElement = RichTextSectionElement.User
+//            .builder()
+//            .userId(fromUser)
+//            .build()
+//        val blockElement = RichTextSectionElement
+//            .builder()
+//            .elements(arrayListOf(fromUserSectionElement, textSectionElement, toUserSectionElement))
+//            .build()
+//        val blockElements = arrayListOf<BlockElement>(blockElement)
+//        val blocks = arrayListOf<LayoutBlock>(RichTextBlock.builder().elements(blockElements).build())
+
+        val text = "<@$fromUser> sent $command to <@$toUser>"
 
         client.chatPostMessage {
             it.channel(channelId)
-                .blocks(blocks)
+                .text(text)
         }
     }
 
