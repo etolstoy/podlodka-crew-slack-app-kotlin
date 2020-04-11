@@ -15,7 +15,7 @@ import ru.katella.podlodkacrewslackapp.services.MessageService
 class SlackApp {
 
     @Autowired
-    lateinit var messageService: MessageService
+    private lateinit var messageService: MessageService
 
     @Bean
     fun initSlackApp(): App {

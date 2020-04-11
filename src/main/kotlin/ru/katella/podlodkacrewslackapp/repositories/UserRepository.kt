@@ -1,4 +1,4 @@
-package ru.katella.podlodkacrewslackapp
+package ru.katella.podlodkacrewslackapp.repositories
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -11,4 +11,4 @@ interface UserRepository: JpaRepository<User, String>
 
 @Entity
 @Table(name = "users")
-data class User(@Id val id: String, var likesLimit: Int, var likesReceived: Int)
+data class User(@Id val id: String, var likesReceived: Int = 0)

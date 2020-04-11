@@ -27,7 +27,7 @@ class MessageService {
                     when (innerPart) {
                         is RichTextSectionElement.User -> {
                             userId = innerPart.userId
-                            shouldCheckTextField = true
+                            shouldCheckTextField = !userId.isNullOrEmpty()
                         }
                         is RichTextSectionElement.Text -> {
                             if (shouldCheckTextField) {
@@ -49,5 +49,5 @@ sealed class Command
 object NoOp : Command()
 object Increment : Command()
 object Decrement : Command()
-class Increase(by: Int): Command()
-class Decrease(by: Int): Command()
+data class Increase(val by: Int): Command()
+data class Decrease(val by: Int): Command()
