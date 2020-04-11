@@ -1,25 +1,16 @@
 package ru.katella.podlodkacrewslackapp.services
 
-import com.slack.api.bolt.App
-import com.slack.api.methods.MethodsClient
-import com.slack.api.methods.request.users.UsersInfoRequest
 import com.slack.api.model.block.RichTextBlock
-import com.slack.api.model.block.element.RichTextElement
 import com.slack.api.model.block.element.RichTextSectionElement
-import com.slack.api.model.block.element.UsersSelectElement
 import com.slack.api.model.event.MessageEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.slack.SlackApp
-import kotlin.contracts.contract
 
 @Service
 class MessageService {
 
-
-
     @Autowired
-    lateinit var likeService: LikeService
+    lateinit var commandProcessingService: CommandProcessingService
 
     fun processMessage(message: MessageEvent) {
 
@@ -39,8 +30,9 @@ class MessageService {
                             shouldCheckTextField = true
                         }
                         is RichTextSectionElement.Text -> {
-                            if (shouldCheckTextField && blockContainsIncrementLogic(innerPart.text)) {
-                                likeService.processLike(currentUser, userId!!, innerPart.text, currentChannel)
+                            if (shouldCheckTextField) {
+                                val command = commandProcessingService.parseCommand(innerPart.text)
+                                commandProcessingService.processCommand(currentUser, userId!!, command, currentChannel)
                             }
                         }
                     }
@@ -49,7 +41,13 @@ class MessageService {
         }
     }
 
-    private fun blockContainsIncrementLogic(text: String): Boolean {
-        return text.contains("++")
-    }
+
 }
+
+sealed class Command
+
+object NoOp : Command()
+object Increment : Command()
+object Decrement : Command()
+class Increase(by: Int): Command()
+class Decrease(by: Int): Command()
