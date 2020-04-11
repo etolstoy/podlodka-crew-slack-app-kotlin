@@ -1,12 +1,10 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.methods.MethodsClient
-import com.slack.api.model.block.LayoutBlock
-import com.slack.api.model.block.RichTextBlock
-import com.slack.api.model.block.element.BlockElement
-import com.slack.api.model.block.element.RichTextSectionElement
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import ru.katella.podlodkacrewslackapp.User
+import ru.katella.podlodkacrewslackapp.UserRepository
 
 typealias UserId = String
 
@@ -16,30 +14,19 @@ class CommandProcessingService {
     @Autowired
     lateinit var client: MethodsClient
 
+    @Autowired
+    lateinit var userRepository: UserRepository
+
     fun processCommand(fromUser: UserId, toUser: UserId, command: Command, channelId: String) {
         println("user $fromUser send $command to $toUser")
 
-
-//        val fromUserSectionElement = RichTextSectionElement.User
-//            .builder()
-//            .userId(fromUser)
-//            .build()
-//        val textSectionElement = RichTextSectionElement.Text
-//            .builder()
-//            .text(" sent $command to ")
-//            .build()
-//        val toUserSectionElement = RichTextSectionElement.User
-//            .builder()
-//            .userId(fromUser)
-//            .build()
-//        val blockElement = RichTextSectionElement
-//            .builder()
-//            .elements(arrayListOf(fromUserSectionElement, textSectionElement, toUserSectionElement))
-//            .build()
-//        val blockElements = arrayListOf<BlockElement>(blockElement)
-//        val blocks = arrayListOf<LayoutBlock>(RichTextBlock.builder().elements(blockElements).build())
-
         val text = "<@$fromUser> sent $command to <@$toUser>"
+
+        when (command) {
+            is Increment -> {
+                userRepository.save(User(fromUser, 100, 0))
+            }
+        }
 
         client.chatPostMessage {
             it.channel(channelId)
