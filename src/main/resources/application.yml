@@ -1,4 +1,4 @@
 logging.level:
-  com.slack.api: ERROR
+  com.slack.api: DEBUG
 server:
   port: 3000
