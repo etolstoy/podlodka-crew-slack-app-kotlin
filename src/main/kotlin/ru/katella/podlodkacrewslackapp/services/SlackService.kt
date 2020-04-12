@@ -60,13 +60,31 @@ class SlackService {
         }
     }
 
+    fun postFavoriteHost(channel: String, hostId: String) {
+
+        val texts = listOf(
+            "Опросы релевантной аудитории показали, что лучше всех подкаст \"Подлодка\" ведет ${hostId.userTag()}",
+            "Бесспорно, лучший ведущий подкаста – ${hostId.userTag()}",
+            "Чей голос сладок, как мед, и ласкает уши слушателей? Конечно же ${hostId.userTag()}",
+            "Моя мама говорит, что ${hostId.userTag()} – лучше всех",
+            "Нет лучше музыки, чем голос ${hostId.userTag()}",
+            "По статистике больше всего слушают выпуски, где присутствует ${hostId.userTag()}",
+            "Лучший ведущий Подлодки в 2020 году – ${hostId.userTag()}"
+        )
+        val randomText = texts.random()
+        client.chatPostMessage {
+            it.channel(channel)
+                .text(randomText)
+        }
+    }
+
     fun reactionInfo(channelId: String, messageTimestamp: String): Reaction? {
         val request = ReactionsGetRequest.builder()
             .channel(channelId)
             .timestamp(messageTimestamp)
             .build()
         val response = client.reactionsGet(request)
-        return response.message.reactions.find { it.name == "fire" }
+        return response.message.reactions.find { it.name == "thumbsup" }
     }
 
     fun slackUserInfo(userId: String): SlackUser {
@@ -110,7 +128,6 @@ class SlackService {
     data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean)
 
     companion object {
-        const val DELIMITER = ". "
         const val ROW_SEPARATOR = '\n'
         const val DEFAULT_EMOJI = ":point_right:"
         val EMOJI_MAP = mapOf<Int, String>(

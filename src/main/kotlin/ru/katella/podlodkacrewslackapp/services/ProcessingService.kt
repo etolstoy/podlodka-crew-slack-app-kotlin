@@ -64,8 +64,14 @@ class ProcessingService {
         slackService.postLeaderBoard(channelId, searchResult.content)
     }
 
+    fun processBestHost(channelId: String) {
+        val hostIds = listOf("U011BT88CDR", "U011A80PMQT", "U011EESQ0G6", "U011F6VEEUV")
+        val favoriteHostId = hostIds.random()
+        slackService.postFavoriteHost(channelId, favoriteHostId)
+    }
+
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
-        if (reaction == "fire") {
+        if (reaction == "thumbsup") {
             val messageInfo = slackService.reactionInfo(channelId, messageTimestamp) ?: return
             if (messageInfo.count < REACTIONS_FOR_PRIZE) return
             val message = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)

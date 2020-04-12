@@ -19,4 +19,9 @@ class MainController {
                   @RequestParam(name = "user_id") userId: String) {
         processingService.processLeaderboard(channelId, userId)
     }
+
+    @PostMapping("/best_host")
+    fun bestHost(@RequestParam(name = "channel_id") channelId: String) {
+        processingService.processBestHost(channelId)
+    }
 }
