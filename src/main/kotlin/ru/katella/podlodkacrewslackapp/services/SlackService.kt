@@ -51,7 +51,7 @@ class SlackService {
             .user(userId)
             .build()
         val slackUser = client.usersInfo(request).user
-        return SlackUser(slackUser.id, slackUser.name, slackUser.isAdmin)
+        return SlackUser(slackUser.id, slackUser.realName, slackUser.isAdmin)
     }
 
     fun isUserAdmin(userId: String): Boolean {
