@@ -1,61 +1,70 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.User
 import ru.katella.podlodkacrewslackapp.repositories.UserRepository
 
 @Service
-class CommandProcessingService {
+class ProcessingService {
 
     @Autowired
     lateinit var userRepository: UserRepository
     @Autowired
     lateinit var slackService: SlackService
 
-    fun processCommand(fromUser: String, toUser: String, command: Command, channelId: String) {
+    fun processPoints(donatingUser: String, receivingUser: String, operation: Operation, channelId: String) {
 
-
-        val donator = userRepository.findById(fromUser).orElseGet {
-            userRepository.saveAndFlush(User(fromUser))
+        val donator = userRepository.findById(donatingUser).orElseGet {
+            userRepository.saveAndFlush(User(donatingUser))
         }
-        val recipient = userRepository.findById(toUser).orElseGet {
-            userRepository.saveAndFlush(User(toUser))
+        val recipient = userRepository.findById(receivingUser).orElseGet {
+            userRepository.saveAndFlush(User(receivingUser))
         }
 
-        val isCommandAllowed = slackService.isUserAdmin(fromUser)
+        val isCommandAllowed = slackService.isUserAdmin(donatingUser)
         if (!isCommandAllowed) {
             return
         }
 
         var received = 0
-        val total = when (command) {
+        val total = when (operation) {
             is Increment -> {
                 received = 1
-                recipient.likesReceived + 1
+                recipient.points + 1
             }
             is Decrement -> {
                 received = -1
-                recipient.likesReceived - 1
+                recipient.points - 1
             }
             is Increase -> {
-                received = command.by
-                recipient.likesReceived + command.by
+                received = operation.by
+                recipient.points + operation.by
             }
             is Decrease -> {
-                received = -command.by
-                recipient.likesReceived - command.by
+                received = -operation.by
+                recipient.points - operation.by
             }
             is NoOp -> {
                 null
             }
         }?.apply {
-            userRepository.saveAndFlush(recipient.copy(likesReceived = this))
-            slackService.postUserReceivedPointsFrom(fromUser, toUser, received, this)
+            userRepository.saveAndFlush(recipient.copy(points = this))
+            slackService.postUserReceivedPointsFrom(receivingUser, donatingUser, received, this)
         }
     }
 
-    fun parseCommand(text: String): Command {
+    fun processLeaderboard(channelId: String, userId: String) {
+        val searchResult = userRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "points")))
+        if (searchResult.isEmpty) {
+            return
+        }
+        slackService.postLeaderBoard(channelId, searchResult.content)
+    }
+
+    fun parseCommand(text: String): Operation {
         return when {
             text.contains("++") -> {
                 Increment

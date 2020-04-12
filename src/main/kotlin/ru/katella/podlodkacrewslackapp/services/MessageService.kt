@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 class MessageService {
 
     @Autowired
-    lateinit var commandProcessingService: CommandProcessingService
+    lateinit var processingService: ProcessingService
 
     fun processMessage(message: MessageEvent) {
 
@@ -31,8 +31,8 @@ class MessageService {
                         }
                         is RichTextSectionElement.Text -> {
                             if (shouldCheckTextField) {
-                                val command = commandProcessingService.parseCommand(innerPart.text)
-                                commandProcessingService.processCommand(currentUser, userId!!, command, currentChannel)
+                                val command = processingService.parseCommand(innerPart.text)
+                                processingService.processPoints(currentUser, userId!!, command, currentChannel)
                             }
                         }
                     }
@@ -44,10 +44,10 @@ class MessageService {
 
 }
 
-sealed class Command
+sealed class Operation
 
-object NoOp : Command()
-object Increment : Command()
-object Decrement : Command()
-data class Increase(val by: Int): Command()
-data class Decrease(val by: Int): Command()
+object NoOp : Operation()
+object Increment : Operation()
+object Decrement : Operation()
+data class Increase(val by: Int): Operation()
+data class Decrease(val by: Int): Operation()
