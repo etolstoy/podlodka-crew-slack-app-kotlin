@@ -6,29 +6,31 @@ import com.slack.api.bolt.handler.BoltEventHandler
 import com.slack.api.bolt.handler.builtin.SlashCommandHandler
 import com.slack.api.methods.MethodsClient
 import com.slack.api.model.event.MessageEvent
+import com.slack.api.model.event.ReactionAddedEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.katella.podlodkacrewslackapp.services.MessageService
+import ru.katella.podlodkacrewslackapp.services.EventService
 
 @Configuration
 class SlackApp {
 
     @Autowired
-    private lateinit var messageService: MessageService
+    private lateinit var eventService: EventService
 
     @Bean
     fun initSlackApp(): App {
         val app = App()
         app.command("hello", SlashCommandHandler { req, ctx ->
-            println("DEBUG command hello received")
             return@SlashCommandHandler ctx.ack("What's up")
         })
         app.event(MessageEvent::class.java, BoltEventHandler { event, ctx ->
-            print("DEBUG event ${event.eventId} received with args ${event.event.text}")
-            event.authedUsers.forEach { println(it) }
-            messageService.processMessage(message = event.event)
+            eventService.processMessage(message = event.event)
 
+            ctx.ack()
+        })
+        app.event(ReactionAddedEvent::class.java, BoltEventHandler { event, ctx ->
+            eventService.processReaction(event.event)
             ctx.ack()
         })
         return app

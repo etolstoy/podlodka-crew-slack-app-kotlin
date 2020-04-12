@@ -11,4 +11,4 @@ interface ConfigRepository: JpaRepository<Config, Int>
 
 @Entity
 @Table(name = "config")
-data class Config(@Id val id: Int, var gameNotificationsChannel: String = "testing")
+data class Config(@Id val id: Int, var gameNotificationsChannel: String = "scoring")

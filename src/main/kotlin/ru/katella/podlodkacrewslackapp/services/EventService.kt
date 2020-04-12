@@ -3,11 +3,12 @@ package ru.katella.podlodkacrewslackapp.services
 import com.slack.api.model.block.RichTextBlock
 import com.slack.api.model.block.element.RichTextSectionElement
 import com.slack.api.model.event.MessageEvent
+import com.slack.api.model.event.ReactionAddedEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class MessageService {
+class EventService {
 
     @Autowired
     lateinit var processingService: ProcessingService
@@ -39,6 +40,20 @@ class MessageService {
                 }
             }
         }
+    }
+
+    fun processReaction(event: ReactionAddedEvent) {
+        val itemUser = event.itemUser
+        val itemChannel = event.item.channel
+        val itemType = event.item.type
+        val user = event.user
+        val reaction = event.reaction
+        println("DEBUG REACTION: \n" +
+                "itemUser = $itemUser \n" +
+                "itemChannel = $itemChannel \n" +
+                "itemType = $itemType \n" +
+                "user = $user \n" +
+                "reaction = $reaction")
     }
 
 
