@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import ru.katella.podlodkacrewslackapp.repositories.Message
+import ru.katella.podlodkacrewslackapp.repositories.ReactionsRepository
 import ru.katella.podlodkacrewslackapp.repositories.User
 import ru.katella.podlodkacrewslackapp.repositories.UserRepository
 
@@ -13,18 +15,14 @@ class ProcessingService {
     @Autowired
     lateinit var userRepository: UserRepository
     @Autowired
+    lateinit var reactionsRepository: ReactionsRepository
+    @Autowired
     lateinit var slackService: SlackService
 
     fun processPoints(donatingUser: String, receivingUser: String, operation: Operation, channelId: String) {
 
-        val donator = userRepository.findById(donatingUser).orElseGet {
-            val slackUser = slackService.slackUserInfo(donatingUser)
-            userRepository.saveAndFlush(User(donatingUser, slackUser.userName, slackUser.isAdmin))
-        }
-        val recipient = userRepository.findById(receivingUser).orElseGet {
-            val slackUser = slackService.slackUserInfo(receivingUser)
-            userRepository.saveAndFlush(User(receivingUser,slackUser.userName, slackUser.isAdmin))
-        }
+        val donator = getOrCreateUser(donatingUser)
+        val recipient = getOrCreateUser(receivingUser)
 
         val isCommandAllowed = slackService.isUserAdmin(donatingUser)
         if (!isCommandAllowed) {
@@ -68,7 +66,15 @@ class ProcessingService {
 
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
         if (reaction == "fire") {
-            slackService.messageInfo(channelId, messageTimestamp)
+            val messageInfo = slackService.reactionInfo(channelId, messageTimestamp) ?: return
+            if (messageInfo.count < REACTIONS_FOR_PRIZE) return
+            val message = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
+            if (message.isNotEmpty()) return
+            val user = getOrCreateUser(receivingUser)
+            val newPoints = user.points + POINTS_FOR_REACTIONS
+            userRepository.saveAndFlush(user.copy(points = newPoints))
+            reactionsRepository.saveAndFlush(Message(messageTimestamp, channelId))
+            slackService.postUserReceivedPointsForReactions(receivingUser, POINTS_FOR_REACTIONS, newPoints)
         }
     }
 
@@ -98,5 +104,17 @@ class ProcessingService {
                 NoOp
             }
         }
+    }
+
+    fun getOrCreateUser(userId: String): User {
+        return userRepository.findById(userId).orElseGet {
+            val slackUser = slackService.slackUserInfo(userId)
+            userRepository.saveAndFlush(User(userId, slackUser.userName, slackUser.isAdmin))
+        }
+    }
+
+    companion object {
+        private const val REACTIONS_FOR_PRIZE = 10
+        private const val POINTS_FOR_REACTIONS = 10
     }
 }

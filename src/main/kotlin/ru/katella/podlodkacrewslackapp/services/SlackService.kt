@@ -3,6 +3,7 @@ package ru.katella.podlodkacrewslackapp.services
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.reactions.ReactionsGetRequest
 import com.slack.api.methods.request.users.UsersInfoRequest
+import com.slack.api.model.Reaction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.User
@@ -30,6 +31,19 @@ class SlackService {
         }
     }
 
+    fun postUserReceivedPointsForReactions(receivingUserId: String, receivedPoints: Int, total: Int) {
+        val channelName = configService.gameNotificationChannel
+
+        val text = "${receivingUserId.userTag()} получает " +
+                "$receivedPoints за десять :fire: " +
+                "Всего очков: $total"
+
+        client.chatPostMessage {
+            it.channel(channelName)
+                .text(text)
+        }
+    }
+
     fun postLeaderBoard(channel: String, leaderBoard: List<User>) {
         var table = "*Топ-10 участников конкурса:*"
         leaderBoard.forEachIndexed { index, user ->
@@ -46,15 +60,13 @@ class SlackService {
         }
     }
 
-    fun messageInfo(channelId: String, messageTimestamp: String) {
+    fun reactionInfo(channelId: String, messageTimestamp: String): Reaction? {
         val request = ReactionsGetRequest.builder()
             .channel(channelId)
             .timestamp(messageTimestamp)
             .build()
         val response = client.reactionsGet(request)
-        val reaction = response.message.reactions.find { it.name == "fire" }
-        val stringReaction = reaction?.let { "reaction ${it.name} found ${it.count} times" } ?: "No fire found"
-        println("DEBUG SLACK REACTION INFO: user = ${response.message.user} \n $stringReaction")
+        return response.message.reactions.find { it.name == "fire" }
     }
 
     fun slackUserInfo(userId: String): SlackUser {

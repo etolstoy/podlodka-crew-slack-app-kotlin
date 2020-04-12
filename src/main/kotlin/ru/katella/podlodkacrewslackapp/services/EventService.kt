@@ -43,21 +43,12 @@ class EventService {
     }
 
     fun processReaction(event: ReactionAddedEvent) {
-        val itemUser = event.itemUser
-        val itemChannel = event.item.channel
-        val itemType = event.item.type
-        val user = event.user
-        val reaction = event.reaction
-        val messageTs = event.item.ts
-        processingService.processNewReaction(itemChannel, reaction, itemUser, user, messageTs)
-        
-        println("DEBUG REACTION: \n" +
-                "itemUser = $itemUser \n" +
-                "itemChannel = $itemChannel \n" +
-                "itemType = $itemType \n" +
-                "user = $user \n" +
-                "reaction = $reaction \n" +
-                "timestamp = $messageTs")
+        processingService.processNewReaction(
+            event.item.channel,
+            event.reaction,
+            event.itemUser,
+            event.user,
+            event.item.ts)
     }
 
 
