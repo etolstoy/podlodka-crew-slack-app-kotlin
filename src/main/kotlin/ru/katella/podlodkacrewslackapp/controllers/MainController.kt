@@ -15,9 +15,12 @@ class MainController {
     private lateinit var processingService: ProcessingService
 
     @PostMapping("/leaderboard")
-    fun greetings(@RequestParam(name = "channel_name") channel: String,
-                  @RequestParam(name = "user_id") userId: String) {
+    fun greetings(@RequestParam params: Map<String,String>) {
 
-        processingService.processLeaderboard(channel, userId)
+        //println("DEBUG CHANNEL: $channel")
+        params.forEach { (k, v) ->
+            println("DEBUG PARAM: $k -> $v")
+        }
+        processingService.processLeaderboard("testing", "")
     }
 }
