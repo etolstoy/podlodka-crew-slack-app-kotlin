@@ -5,6 +5,7 @@ import com.slack.api.methods.request.users.UsersInfoRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.User
+import kotlin.math.absoluteValue
 
 @Service
 class SlackService {
@@ -29,14 +30,13 @@ class SlackService {
     }
 
     fun postLeaderBoard(channel: String, leaderBoard: List<User>) {
-        var table = "*#* |*Участник*                              |*Очки*"
+        var table = "*Топ-10 участников конкурса:*"
         leaderBoard.forEachIndexed { index, user ->
             val row = ROW_SEPARATOR +
-                    index.toString().padTo(NUMBER_SECTION_LENGTH) + DELIMITER +
-                    user.id.userTag().padTo(NAME_SECTION_LENGTH, user.displayName) + DELIMITER +
-                    user.points.toString().padTo(POINTS_SECTION_LENGTH) + ROW_SEPARATOR
+                    EMOJI_MAP.getOrDefault(index, DEFAULT_EMOJI) +
+                    index.toString() + DELIMITER +
+                    user.id.userTag() + " – " + user.points.pointsString()
             table += row
-
         }
 
         client.chatPostMessage {
@@ -64,23 +64,44 @@ class SlackService {
     }
 
     private fun String.userTag(): String = "<@$this>"
-    private fun String.padTo(length: Int, base: String = this): String {
-        return if (base.length < length) {
-            val diff = length - base.length
-            this.padEnd(diff)
-        } else {
-            this
+
+    private fun Int.pointsString(): String {
+        var result = "${this.toString()} "
+        val abs = this.absoluteValue
+        result += when (abs) {
+            0, in 5..20 -> "очков"
+            1 -> "очко"
+            in 2..4 -> "очка"
+            else -> {
+                when (abs % 10) {
+                    0, in 5..9 -> "очков"
+                    1 -> "очко"
+                    in 2..4 -> "очка"
+                    else -> "очков"
+                }
+            }
         }
+        return result
     }
 
     data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean)
 
     companion object {
-        const val NUMBER_SECTION_LENGTH = 4
-        const val NAME_SECTION_LENGTH = 40
-        const val POINTS_SECTION_LENGTH = 6
-        const val DELIMITER = '|'
+        const val DELIMITER = ". "
         const val ROW_SEPARATOR = '\n'
+        const val DEFAULT_EMOJI = ":point_right:"
+        val EMOJI_MAP = mapOf<Int, String>(
+            0 to ":zero:",
+            1 to ":one:",
+            2 to ":two:",
+            3 to ":three:",
+            4 to ":four:",
+            5 to ":five:",
+            6 to ":six:",
+            7 to ":seven:",
+            8 to ":eight:",
+            9 to ":nine:"
+        )
     }
 }
 
