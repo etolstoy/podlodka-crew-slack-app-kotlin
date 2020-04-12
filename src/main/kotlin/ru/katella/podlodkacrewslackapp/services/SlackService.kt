@@ -33,7 +33,7 @@ class SlackService {
         leaderBoard.forEachIndexed { index, user ->
             val row = ROW_SEPARATOR +
                     index.toString().padTo(NUMBER_SECTION_LENGTH) + DELIMITER +
-                    user.id.userTag().padTo(NAME_SECTION_LENGTH) + DELIMITER +
+                    user.id.userTag().padTo(NAME_SECTION_LENGTH, user.displayName) + DELIMITER +
                     user.points.toString().padTo(POINTS_SECTION_LENGTH) + ROW_SEPARATOR
             table += row
 
@@ -46,13 +46,17 @@ class SlackService {
         }
     }
 
-
-    fun isUserAdmin(userId: String): Boolean {
+    fun slackUserInfo(userId: String): SlackUser {
         val request = UsersInfoRequest.builder()
             .user(userId)
             .build()
+        val slackUser = client.usersInfo(request).user
+        return SlackUser(slackUser.id, slackUser.name, slackUser.isAdmin)
+    }
+
+    fun isUserAdmin(userId: String): Boolean {
         return try {
-            val user = client.usersInfo(request).user
+            val user = slackUserInfo(userId)
             user.isAdmin
         } catch (ex: Exception) {
             false
@@ -60,14 +64,16 @@ class SlackService {
     }
 
     private fun String.userTag(): String = "<@$this>"
-    private fun String.padTo(length: Int): String {
-        return if (this.length < length) {
-            val diff = length - this.length
+    private fun String.padTo(length: Int, base: String = this): String {
+        return if (base.length < length) {
+            val diff = length - base.length
             this.padEnd(diff)
         } else {
             this
         }
     }
+
+    data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean)
 
     companion object {
         const val NUMBER_SECTION_LENGTH = 4

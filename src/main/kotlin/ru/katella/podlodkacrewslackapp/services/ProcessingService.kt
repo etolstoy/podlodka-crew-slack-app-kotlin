@@ -18,10 +18,12 @@ class ProcessingService {
     fun processPoints(donatingUser: String, receivingUser: String, operation: Operation, channelId: String) {
 
         val donator = userRepository.findById(donatingUser).orElseGet {
-            userRepository.saveAndFlush(User(donatingUser))
+            val slackUser = slackService.slackUserInfo(donatingUser)
+            userRepository.saveAndFlush(User(donatingUser, slackUser.userName, slackUser.isAdmin))
         }
         val recipient = userRepository.findById(receivingUser).orElseGet {
-            userRepository.saveAndFlush(User(receivingUser))
+            val slackUser = slackService.slackUserInfo(receivingUser)
+            userRepository.saveAndFlush(User(receivingUser,slackUser.userName, slackUser.isAdmin))
         }
 
         val isCommandAllowed = slackService.isUserAdmin(donatingUser)

@@ -11,4 +11,4 @@ interface UserRepository: JpaRepository<User, String>
 
 @Entity
 @Table(name = "users")
-data class User(@Id val id: String, var points: Int = 0)
+data class User(@Id val id: String, val displayName: String, val isAdmin: Boolean, var points: Int = 0)
