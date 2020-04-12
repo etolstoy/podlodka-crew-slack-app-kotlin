@@ -1,6 +1,7 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.methods.MethodsClient
+import com.slack.api.methods.request.reactions.ReactionsGetRequest
 import com.slack.api.methods.request.users.UsersInfoRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -43,6 +44,17 @@ class SlackService {
                 .mrkdwn(true)
                 .text(table)
         }
+    }
+
+    fun messageInfo(channelId: String, messageTimestamp: String) {
+        val request = ReactionsGetRequest.builder()
+            .channel(channelId)
+            .timestamp(messageTimestamp)
+            .build()
+        val response = client.reactionsGet(request)
+        val reaction = response.message.reactions.find { it.name == "fire" }
+        val stringReaction = reaction?.let { "reaction ${it.name} found ${it.count} times" } ?: "No fire found"
+        println("DEBUG SLACK REACTION INFO: user = ${response.message.user} \n $stringReaction")
     }
 
     fun slackUserInfo(userId: String): SlackUser {

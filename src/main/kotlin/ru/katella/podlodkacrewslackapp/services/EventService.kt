@@ -48,12 +48,16 @@ class EventService {
         val itemType = event.item.type
         val user = event.user
         val reaction = event.reaction
+        val messageTs = event.item.ts
+        processingService.processNewReaction(itemChannel, reaction, itemUser, user, messageTs)
+        
         println("DEBUG REACTION: \n" +
                 "itemUser = $itemUser \n" +
                 "itemChannel = $itemChannel \n" +
                 "itemType = $itemType \n" +
                 "user = $user \n" +
-                "reaction = $reaction")
+                "reaction = $reaction \n" +
+                "timestamp = $messageTs")
     }
 
 

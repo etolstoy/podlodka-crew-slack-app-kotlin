@@ -66,6 +66,12 @@ class ProcessingService {
         slackService.postLeaderBoard(channelId, searchResult.content)
     }
 
+    fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
+        if (reaction == "fire") {
+            slackService.messageInfo(channelId, messageTimestamp)
+        }
+    }
+
     fun parseCommand(text: String): Operation {
         return when {
             text.contains("++") -> {
