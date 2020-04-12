@@ -34,7 +34,6 @@ class SlackService {
         leaderBoard.forEachIndexed { index, user ->
             val row = ROW_SEPARATOR +
                     EMOJI_MAP.getOrDefault(index, DEFAULT_EMOJI) +
-                    index.toString() + DELIMITER +
                     user.id.userTag() + " – " + user.points.pointsString()
             table += row
         }
