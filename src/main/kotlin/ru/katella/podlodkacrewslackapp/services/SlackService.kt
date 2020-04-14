@@ -22,7 +22,7 @@ class SlackService {
         val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "$receivedPoints от " +
+                "${receivedPoints.pointsString()} от " +
                 "${donatingUserId.userTag()}. " +
                 "Всего очков: $total"
 
@@ -36,7 +36,7 @@ class SlackService {
         val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "$receivedPoints за десять или более :thumbsup: в [этом сообщении]($originalMessage)" +
+                "${receivedPoints.pointsString()} за десять или более :thumbsup: здесь :point_right:($originalMessage)" +
                 "Всего очков: $total"
 
         client.chatPostMessage {
@@ -170,8 +170,8 @@ class SlackService {
             7 to ":seven:",
             8 to ":eight:",
             9 to ":nine:",
-            10 to ":one::one:",
-            11 to ":one::zero:",
+            10 to ":one::zero:",
+            11 to ":one::one:",
             12 to ":one::two:",
             13 to ":one::three:",
             14 to ":one::four:",
