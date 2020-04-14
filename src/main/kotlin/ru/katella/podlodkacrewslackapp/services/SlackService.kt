@@ -37,7 +37,7 @@ class SlackService {
 
         val text = "${receivingUserId.userTag()} получает " +
                 "${receivedPoints.pointsString()} за десять или более :thumbsup: здесь :point_right: $originalMessage" +
-                "Всего очков: $total"
+                "\nВсего очков: $total"
 
         client.chatPostMessage {
             it.channel(channelName)
