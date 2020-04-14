@@ -36,8 +36,7 @@ class SlackService {
         val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "${receivedPoints.pointsString()} за десять или более :thumbsup: здесь :point_right: $originalMessage" +
-                "\nВсего очков: $total"
+                "${receivedPoints.pointsString()} за десять или более :thumbsup: <$originalMessage|здесь> \nВсего очков: *$total*"
 
         client.chatPostMessage {
             it.channel(channelName)
