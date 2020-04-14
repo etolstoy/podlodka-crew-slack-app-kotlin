@@ -71,8 +71,10 @@ class ProcessingService {
     }
 
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
+        println("DEBUG REACTION: $reaction")
         if (reaction == "thumbsup") {
             val messageInfo = slackService.reactionInfo(channelId, messageTimestamp) ?: return
+            println("DEBUG REACTION: ${messageInfo.name} – ${messageInfo.count} times")
             if (messageInfo.count < REACTIONS_FOR_PRIZE) return
             val message = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
             if (message.isNotEmpty()) return

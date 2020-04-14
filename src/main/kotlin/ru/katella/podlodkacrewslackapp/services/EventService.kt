@@ -19,7 +19,7 @@ class EventService {
         val currentUser = message.user
         message.blocks.forEach { block ->
             if (block is RichTextBlock) {
-                var shouldCheckTextField = true
+                var shouldCheckTextField = false
                 var userId: String? = null
 
                 val element = block.elements.first { it is RichTextSectionElement } as RichTextSectionElement
