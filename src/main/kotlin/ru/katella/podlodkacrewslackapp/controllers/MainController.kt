@@ -24,4 +24,10 @@ class MainController {
     fun bestHost(@RequestParam(name = "channel_id") channelId: String) {
         processingService.processBestHost(channelId)
     }
+
+    @PostMapping("/reset_score")
+    fun resetScore(@RequestParam(name = "channel_id") channelId: String,
+                   @RequestParam(name = "user_id") userId: String) {
+        processingService.processReset(channelId, userId)
+    }
 }

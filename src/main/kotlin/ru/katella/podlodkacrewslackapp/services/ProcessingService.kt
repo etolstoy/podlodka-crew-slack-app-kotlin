@@ -1,7 +1,6 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.Message
@@ -57,11 +56,12 @@ class ProcessingService {
     }
 
     fun processLeaderboard(channelId: String, userId: String) {
-        val searchResult = userRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "points")))
-        if (searchResult.isEmpty) {
+        getOrCreateUser(userId)
+        val searchResult = userRepository.findAll(Sort.by(Sort.Direction.DESC, "points"))
+        if (searchResult.isEmpty()) {
             return
         }
-        slackService.postLeaderBoard(channelId, searchResult.content)
+        slackService.postLeaderBoard(userId, channelId, searchResult)
     }
 
     fun processBestHost(channelId: String) {
@@ -71,20 +71,32 @@ class ProcessingService {
     }
 
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
-        println("DEBUG REACTION: $reaction")
         if (reaction in TRIGGERING_REACTIONS) {
-            val messageReactions = slackService.reactionsInfo(channelId, messageTimestamp, TRIGGERING_REACTIONS) ?: return
-            messageReactions.forEach {
-                println("DEBUG REACTION: ${it.name} – ${it.count} times")
-            }
+            val message = slackService.messageInfo(channelId, messageTimestamp)
+
+            val messageReactions = message.reactions.filter { it.name in TRIGGERING_REACTIONS }
             if (messageReactions.all { it.count < REACTIONS_FOR_PRIZE }) return
-            val message = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
-            if (message.isNotEmpty()) return
+
+            val dbMessage = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
+            if (dbMessage.isNotEmpty()) return
+
             val user = getOrCreateUser(receivingUser)
             val newPoints = user.points + POINTS_FOR_REACTIONS
             userRepository.saveAndFlush(user.copy(points = newPoints))
             reactionsRepository.saveAndFlush(Message(messageTimestamp, channelId))
-            slackService.postUserReceivedPointsForReactions(receivingUser, POINTS_FOR_REACTIONS, newPoints)
+            slackService.postUserReceivedPointsForReactions(message.permalink, receivingUser, POINTS_FOR_REACTIONS, newPoints)
+        }
+    }
+
+    fun processReset(channelId: String, userId: String) {
+        val user = slackService.slackUserInfo(userId)
+        if (user.isAdmin) {
+            reactionsRepository.deleteAll()
+            userRepository.deleteAll()
+        } else {
+            slackService.postEphemeralMessage(channelId,
+                userId,
+                "Эх, вот бы сейчас все *обнулить* да начать сначала? Но нет, эта опция только для админов ;)")
         }
     }
 

@@ -1,9 +1,10 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.methods.MethodsClient
+import com.slack.api.methods.request.chat.ChatPostEphemeralRequest
 import com.slack.api.methods.request.reactions.ReactionsGetRequest
 import com.slack.api.methods.request.users.UsersInfoRequest
-import com.slack.api.model.Reaction
+import com.slack.api.methods.response.reactions.ReactionsGetResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.User
@@ -31,11 +32,11 @@ class SlackService {
         }
     }
 
-    fun postUserReceivedPointsForReactions(receivingUserId: String, receivedPoints: Int, total: Int) {
+    fun postUserReceivedPointsForReactions(originalMessage: String, receivingUserId: String, receivedPoints: Int, total: Int) {
         val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "$receivedPoints за десять :fire: " +
+                "$receivedPoints за десять или более :thumbsup: в [этом сообщении]($originalMessage)" +
                 "Всего очков: $total"
 
         client.chatPostMessage {
@@ -44,11 +45,21 @@ class SlackService {
         }
     }
 
-    fun postLeaderBoard(channel: String, leaderBoard: List<User>) {
-        var table = "*Топ-10 участников конкурса:*"
-        leaderBoard.forEachIndexed { index, user ->
+    fun postEphemeralMessage(channelId: String, userId: String, text: String) {
+        client.chatPostEphemeral {
+            it.channel(channelId)
+                .user(userId)
+                .text(text)
+        }
+    }
+
+    fun postLeaderBoard(userId: String, channel: String, leaderBoard: List<User>) {
+        var table = "*Топ-15 участников конкурса:*"
+        var userPresentedInTop = false
+        leaderBoard.take(15).forEachIndexed { index, user ->
+            if (user.id == userId) userPresentedInTop = true
             val row = ROW_SEPARATOR +
-                    EMOJI_MAP.getOrDefault(index, DEFAULT_EMOJI) +
+                    EMOJI_MAP.getOrDefault(index + 1, DEFAULT_EMOJI) +
                     user.id.userTag() + " – " + user.points.pointsString()
             table += row
         }
@@ -57,6 +68,25 @@ class SlackService {
             it.channel(channel)
                 .mrkdwn(true)
                 .text(table)
+        }
+        if (!userPresentedInTop) {
+            val index = leaderBoard.indexOfFirst { it.id == userId }
+            val builder = ChatPostEphemeralRequest.builder()
+                .channel(channel)
+                .user(userId)
+
+            if (index == -1) {
+                builder.text("Вас пока нет в базе, но не переживайте, это скорее всего какая-то ошибка. " +
+                        "Мы все проверим, а вы пока можете задать какой-нибудь вопрос нашим спикерам :)")
+                client.chatPostEphemeral(builder.build())
+            } else {
+                val score = leaderBoard[index].points
+                val displayIndex = index + 1
+                val text = "У вас $displayIndex-е место в рейтинге с результатом в ${score.pointsString()}. Участвуйте в розыгрышах, " +
+                        "задавайте вопросы, и получайте больше очков!"
+                builder.text(text)
+                client.chatPostEphemeral(builder.build())
+            }
         }
     }
 
@@ -78,13 +108,13 @@ class SlackService {
         }
     }
 
-    fun reactionsInfo(channelId: String, messageTimestamp: String, reactions: List<String>): List<Reaction> {
+    fun messageInfo(channelId: String, messageTimestamp: String): ReactionsGetResponse.Message {
         val request = ReactionsGetRequest.builder()
             .channel(channelId)
             .timestamp(messageTimestamp)
             .build()
         val response = client.reactionsGet(request)
-        return response.message.reactions.filter { it.name in reactions }
+        return response.message
     }
 
     fun slackUserInfo(userId: String): SlackUser {
@@ -131,7 +161,6 @@ class SlackService {
         const val ROW_SEPARATOR = '\n'
         const val DEFAULT_EMOJI = ":point_right:"
         val EMOJI_MAP = mapOf<Int, String>(
-            0 to ":zero:",
             1 to ":one:",
             2 to ":two:",
             3 to ":three:",
@@ -140,7 +169,13 @@ class SlackService {
             6 to ":six:",
             7 to ":seven:",
             8 to ":eight:",
-            9 to ":nine:"
+            9 to ":nine:",
+            10 to ":one::one:",
+            11 to ":one::zero:",
+            12 to ":one::two:",
+            13 to ":one::three:",
+            14 to ":one::four:",
+            15 to ":one::five:"
         )
     }
 }
