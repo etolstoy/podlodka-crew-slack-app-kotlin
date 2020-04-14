@@ -78,13 +78,13 @@ class SlackService {
         }
     }
 
-    fun reactionInfo(channelId: String, messageTimestamp: String): Reaction? {
+    fun reactionsInfo(channelId: String, messageTimestamp: String, reactions: List<String>): List<Reaction> {
         val request = ReactionsGetRequest.builder()
             .channel(channelId)
             .timestamp(messageTimestamp)
             .build()
         val response = client.reactionsGet(request)
-        return response.message.reactions.find { it.name == "thumbsup" }
+        return response.message.reactions.filter { it.name in reactions }
     }
 
     fun slackUserInfo(userId: String): SlackUser {

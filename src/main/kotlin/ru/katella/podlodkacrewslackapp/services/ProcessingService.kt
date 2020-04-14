@@ -73,9 +73,11 @@ class ProcessingService {
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
         println("DEBUG REACTION: $reaction")
         if (reaction in TRIGGERING_REACTIONS) {
-            val messageInfo = slackService.reactionInfo(channelId, messageTimestamp) ?: return
-            println("DEBUG REACTION: ${messageInfo.name} – ${messageInfo.count} times")
-            if (messageInfo.count < REACTIONS_FOR_PRIZE) return
+            val messageReactions = slackService.reactionsInfo(channelId, messageTimestamp, TRIGGERING_REACTIONS) ?: return
+            messageReactions.forEach {
+                println("DEBUG REACTION: ${it.name} – ${it.count} times")
+            }
+            if (messageReactions.all { it.count < REACTIONS_FOR_PRIZE }) return
             val message = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
             if (message.isNotEmpty()) return
             val user = getOrCreateUser(receivingUser)
