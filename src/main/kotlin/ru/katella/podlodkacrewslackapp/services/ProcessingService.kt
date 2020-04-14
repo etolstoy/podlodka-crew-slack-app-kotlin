@@ -72,7 +72,7 @@ class ProcessingService {
 
     fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
         println("DEBUG REACTION: $reaction")
-        if (reaction == "thumbsup") {
+        if (reaction in TRIGGERING_REACTIONS) {
             val messageInfo = slackService.reactionInfo(channelId, messageTimestamp) ?: return
             println("DEBUG REACTION: ${messageInfo.name} – ${messageInfo.count} times")
             if (messageInfo.count < REACTIONS_FOR_PRIZE) return
@@ -124,5 +124,6 @@ class ProcessingService {
     companion object {
         private const val REACTIONS_FOR_PRIZE = 10
         private const val POINTS_FOR_REACTIONS = 10
+        private val TRIGGERING_REACTIONS = listOf("thumbsup", "+1")
     }
 }
