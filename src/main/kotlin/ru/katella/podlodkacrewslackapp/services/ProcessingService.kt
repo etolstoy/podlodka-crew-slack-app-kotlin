@@ -57,7 +57,7 @@ class ProcessingService {
 
     fun processLeaderboard(channelId: String, userId: String) {
         getOrCreateUser(userId)
-        val searchResult = userRepository.findAll(Sort.by(Sort.Direction.DESC, "points"))
+        val searchResult = userRepository.findAll(Sort.by(Sort.Direction.DESC, "points")).filter { !it.isAdmin }
         if (searchResult.isEmpty()) {
             return
         }
