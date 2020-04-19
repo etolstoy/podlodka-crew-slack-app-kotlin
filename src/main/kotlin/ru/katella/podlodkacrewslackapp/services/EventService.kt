@@ -2,6 +2,7 @@ package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.model.block.RichTextBlock
 import com.slack.api.model.block.element.RichTextSectionElement
+import com.slack.api.model.event.AppMentionEvent
 import com.slack.api.model.event.MessageEvent
 import com.slack.api.model.event.ReactionAddedEvent
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +33,7 @@ class EventService {
                         }
                         is RichTextSectionElement.Text -> {
                             if (shouldCheckTextField) {
+
                                 val command = processingService.parseCommand(innerPart.text)
                                 processingService.processPoints(currentUser, userId!!, command, currentChannel)
                             }
@@ -49,6 +51,15 @@ class EventService {
             event.itemUser,
             event.user,
             event.item.ts)
+    }
+
+    fun processAppMention(event: AppMentionEvent) {
+        println("bot id = ${event.botId}")
+        println("channel = ${event.channel}")
+        println("text = ${event.text}")
+        println("thread ts = ${event.threadTs}")
+        println("user = ${event.user}")
+        println("username = ${event.username}")
     }
 
 
