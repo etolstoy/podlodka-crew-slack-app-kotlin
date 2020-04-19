@@ -30,14 +30,14 @@ class SlackApp {
 
             ctx.ack()
         })
-        app.event(ReactionAddedEvent::class.java, BoltEventHandler { event, ctx ->
-            eventService.processReaction(event.event)
-            ctx.ack()
-        })
         app.event(AppMentionEvent::class.java) { event, ctx ->
             eventService.processAppMention(event = event.event)
             return@event ctx.ack()
         }
+        app.event(ReactionAddedEvent::class.java, BoltEventHandler { event, ctx ->
+            eventService.processReaction(event.event)
+            ctx.ack()
+        })
         return app
     }
 
