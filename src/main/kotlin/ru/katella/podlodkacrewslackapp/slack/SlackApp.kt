@@ -5,7 +5,6 @@ import com.slack.api.bolt.App
 import com.slack.api.bolt.handler.BoltEventHandler
 import com.slack.api.bolt.handler.builtin.SlashCommandHandler
 import com.slack.api.methods.MethodsClient
-import com.slack.api.model.event.AppMentionEvent
 import com.slack.api.model.event.MessageEvent
 import com.slack.api.model.event.ReactionAddedEvent
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,10 +29,6 @@ class SlackApp {
 
             ctx.ack()
         })
-        app.event(AppMentionEvent::class.java) { event, ctx ->
-            eventService.processAppMention(event = event.event)
-            return@event ctx.ack()
-        }
         app.event(ReactionAddedEvent::class.java, BoltEventHandler { event, ctx ->
             eventService.processReaction(event.event)
             ctx.ack()

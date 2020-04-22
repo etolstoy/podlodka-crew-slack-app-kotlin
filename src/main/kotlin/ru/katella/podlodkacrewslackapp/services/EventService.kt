@@ -2,7 +2,6 @@ package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.model.block.RichTextBlock
 import com.slack.api.model.block.element.RichTextSectionElement
-import com.slack.api.model.event.AppMentionEvent
 import com.slack.api.model.event.MessageEvent
 import com.slack.api.model.event.ReactionAddedEvent
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,8 +33,12 @@ class EventService {
                         is RichTextSectionElement.Text -> {
                             if (shouldCheckTextField) {
 
-                                val command = processingService.parseCommand(innerPart.text)
-                                processingService.processPoints(currentUser, userId!!, command, currentChannel)
+                                when (val command = parseCommand(innerPart.text)) {
+                                    is PointsOperation -> processingService.processPoints(currentUser, userId!!, command, currentChannel)
+                                    is Lottery -> processingService.processLottery(currentUser, userId!!, command, currentChannel, message.threadTs)
+                                    is NoOp -> return
+                                }
+
                             }
                         }
                     }
@@ -53,22 +56,56 @@ class EventService {
             event.item.ts)
     }
 
-    fun processAppMention(event: AppMentionEvent) {
-        println("bot id = ${event.botId}")
-        println("channel = ${event.channel}")
-        println("text = ${event.text}")
-        println("thread ts = ${event.threadTs}")
-        println("user = ${event.user}")
-        println("username = ${event.username}")
+    private fun parseCommand(text: String): Operation {
+        return when {
+            text.contains("разыгрываем") -> {
+                parseLotteryCommand(text)
+            }
+            text.contains("++") -> {
+                Increment
+            }
+            text.contains("--") -> {
+                Decrement
+            }
+            text.contains("+") -> {
+                val delimiter = "+"
+                val number = text.split(delimiter)[1].toIntOrNull()
+                if (number != null) {
+                    Increase(number)
+                } else NoOp
+            }
+            text.contains("-") -> {
+                val delimiter = "-"
+                val number = text.split(delimiter)[1].toIntOrNull()
+                if (number != null) {
+                    Decrease(number)
+                } else NoOp
+            }
+            else -> {
+                NoOp
+            }
+        }
     }
 
+    private fun parseLotteryCommand(text: String): Operation {
+        val numbers = Regex("[0-9]+").findAll(text)
+            .map { it.value.toInt() }
+            .toList()
 
+        return if (numbers.size == 2) {
+            Lottery(numbers[0], numbers[1])
+        } else {
+            NoOp
+        }
+    }
 }
 
 sealed class Operation
+sealed class PointsOperation: Operation()
 
 object NoOp : Operation()
-object Increment : Operation()
-object Decrement : Operation()
-data class Increase(val by: Int): Operation()
-data class Decrease(val by: Int): Operation()
+object Increment : PointsOperation()
+object Decrement : PointsOperation()
+data class Increase(val by: Int): PointsOperation()
+data class Decrease(val by: Int): PointsOperation()
+data class Lottery(val participants: Int, val pointsPerParticipant: Int): Operation()

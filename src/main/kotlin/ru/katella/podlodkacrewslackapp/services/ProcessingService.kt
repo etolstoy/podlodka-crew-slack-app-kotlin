@@ -18,12 +18,12 @@ class ProcessingService {
     @Autowired
     lateinit var slackService: SlackService
 
-    fun processPoints(donatingUser: String, receivingUser: String, operation: Operation, channelId: String) {
+    fun processPoints(callingUser: String, mentionedUser: String, operation: PointsOperation, channelId: String) {
 
-        val donator = getOrCreateUser(donatingUser)
-        val recipient = getOrCreateUser(receivingUser)
+        val donator = getOrCreateUser(callingUser)
+        val recipient = getOrCreateUser(mentionedUser)
 
-        val isCommandAllowed = slackService.isUserAdmin(donatingUser)
+        val isCommandAllowed = slackService.isUserAdmin(callingUser)
         if (!isCommandAllowed) {
             return
         }
@@ -46,12 +46,39 @@ class ProcessingService {
                 received = -operation.by
                 recipient.points - operation.by
             }
-            is NoOp -> {
-                null
-            }
-        }?.apply {
+        }.apply {
             userRepository.saveAndFlush(recipient.copy(points = this))
-            slackService.postUserReceivedPointsFrom(receivingUser, donatingUser, received, this)
+            slackService.postUserReceivedPointsFrom(mentionedUser, callingUser, received, this)
+        }
+    }
+
+    fun processLottery(callingUser: String,
+                       mentionedUser: String,
+                       op: Lottery,
+                       channelId: String,
+                       currentThread: String) {
+        val caller = getOrCreateUser(callingUser)
+        if (!caller.isAdmin) return
+
+        val botUser = slackService.slackUserInfo(mentionedUser)
+        if (!botUser.isBot && botUser.userName != BOT_NAME) return
+
+        val messageInfo = slackService.messageInfo(channelId, currentThread)
+        val users = messageInfo.reactions
+            .flatMap { it.users }
+            .distinct()
+            .filter { !HOST_IDS.contains(it) && it != botUser.userId }
+            .shuffled()
+        if (op.participants > users.size) return
+        val participants = users.take(op.participants)
+
+        val updatedUsers = participants.map {
+            val user = getOrCreateUser(it)
+            userRepository.saveAndFlush(user.copy(points = user.points + op.pointsPerParticipant))
+        }
+        slackService.postLotteryWinnersToThread(participants, op.pointsPerParticipant, channelId, currentThread)
+        updatedUsers.forEach {
+            slackService.postUserReceivedPointsForLottery(it.id, op.pointsPerParticipant, it.points)
         }
     }
 
@@ -65,8 +92,7 @@ class ProcessingService {
     }
 
     fun processBestHost(channelId: String) {
-        val hostIds = listOf("U011BT88CDR", "U011A80PMQT", "U011EESQ0G6", "U011F6VEEUV")
-        val favoriteHostId = hostIds.random()
+        val favoriteHostId = HOST_IDS.random()
         slackService.postFavoriteHost(channelId, favoriteHostId)
     }
 
@@ -100,33 +126,7 @@ class ProcessingService {
         }
     }
 
-    fun parseCommand(text: String): Operation {
-        return when {
-            text.contains("++") -> {
-                Increment
-            }
-            text.contains("--") -> {
-                Decrement
-            }
-            text.contains("+") -> {
-                val delimiter = "+"
-                val number = text.split(delimiter)[1].toIntOrNull()
-                if (number != null) {
-                    Increase(number)
-                } else NoOp
-            }
-            text.contains("-") -> {
-                val delimiter = "-"
-                val number = text.split(delimiter)[1].toIntOrNull()
-                if (number != null) {
-                    Decrease(number)
-                } else NoOp
-            }
-            else -> {
-                NoOp
-            }
-        }
-    }
+
 
     fun getOrCreateUser(userId: String): User {
         return userRepository.findById(userId).orElseGet {
@@ -138,6 +138,10 @@ class ProcessingService {
     companion object {
         private const val REACTIONS_FOR_PRIZE = 10
         private const val POINTS_FOR_REACTIONS = 10
+        //TODO remove hardcoded bot name
+        private const val BOT_NAME = "Skipper Bot"
         private val TRIGGERING_REACTIONS = listOf("thumbsup", "+1")
+        //TODO remove hardcoded IDs
+        private val HOST_IDS = listOf("U011BT88CDR", "U011A80PMQT", "U011EESQ0G6", "U011F6VEEUV")
     }
 }

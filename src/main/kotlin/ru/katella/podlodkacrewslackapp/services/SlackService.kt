@@ -32,6 +32,19 @@ class SlackService {
         }
     }
 
+    fun postUserReceivedPointsForLottery(receivingUserId: String, receivedPoints: Int, total: Int) {
+        val channelName = "testing"
+
+        val text = "${receivingUserId.userTag()} получает " +
+                "${receivedPoints.pointsString()} за участие в голосовании!" +
+                "Всего очков: $total"
+
+        client.chatPostMessage {
+            it.channel(channelName)
+                .text(text)
+        }
+    }
+
     fun postUserReceivedPointsForReactions(originalMessage: String, receivingUserId: String, receivedPoints: Int, total: Int) {
         val channelName = configService.gameNotificationChannel
 
@@ -41,6 +54,17 @@ class SlackService {
         client.chatPostMessage {
             it.channel(channelName)
                 .unfurlLinks(true)
+                .text(text)
+        }
+    }
+
+    fun postLotteryWinnersToThread(winners: List<String>, points: Int, channelId: String, threadId: String) {
+        val text = "В розыгрыше победили: ${winners.joinToString(",", transform = { it.userTag() })}! " +
+                "Поздравляем! Вы получаете по ${points.pointsString()}"
+
+        client.chatPostMessage {
+            it.channel(channelId)
+                .threadTs(threadId)
                 .text(text)
         }
     }
@@ -122,7 +146,8 @@ class SlackService {
             .user(userId)
             .build()
         val slackUser = client.usersInfo(request).user
-        return SlackUser(slackUser.id, slackUser.realName, slackUser.isAdmin)
+
+        return SlackUser(slackUser.id, slackUser.realName, slackUser.isAdmin, slackUser.isBot)
     }
 
     fun isUserAdmin(userId: String): Boolean {
@@ -155,7 +180,7 @@ class SlackService {
         return result
     }
 
-    data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean)
+    data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean, val isBot: Boolean)
 
     companion object {
         const val ROW_SEPARATOR = '\n'
