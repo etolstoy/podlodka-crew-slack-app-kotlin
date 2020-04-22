@@ -35,7 +35,10 @@ class EventService {
 
                                 when (val command = parseCommand(innerPart.text)) {
                                     is PointsOperation -> processingService.processPoints(currentUser, userId!!, command, currentChannel)
-                                    is Lottery -> processingService.processLottery(currentUser, userId!!, command, currentChannel, message.threadTs)
+                                    is Lottery -> {
+                                        if (message.threadTs == null) return //if raffle is made on a top level (= outside of thread), just skip it
+                                        processingService.processLottery(currentUser, userId!!, command, currentChannel, message.threadTs)
+                                    }
                                     is NoOp -> return
                                 }
 
