@@ -33,6 +33,7 @@ class SlackService {
     }
 
     fun postUserReceivedPointsForLottery(receivingUserId: String, receivedPoints: Int, total: Int) {
+        //TODO исправить!!!
         val channelName = "testing"
 
         val text = "${receivingUserId.userTag()} получает " +
