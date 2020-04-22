@@ -84,7 +84,7 @@ class SlackService {
             val outputIndex = index + 1
             if (user.id == userId) userPresentedInTop = true
             val row = ROW_SEPARATOR +
-                    EMOJI_MAP.getOrElse(outputIndex, { if (outputIndex < 10) "&nbsp; $outputIndex. " else "$outputIndex. "} )+
+                    EMOJI_MAP.getOrElse(outputIndex, { if (outputIndex < 10) "  $outputIndex. " else "$outputIndex. "} )+
                     user.id.userTag() + " – " + user.points.pointsString()
             table += row
         }
