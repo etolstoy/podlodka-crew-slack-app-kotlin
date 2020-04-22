@@ -33,11 +33,10 @@ class SlackService {
     }
 
     fun postUserReceivedPointsForLottery(receivingUserId: String, receivedPoints: Int, total: Int) {
-        //TODO исправить!!!
-        val channelName = "testing"
+        val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "${receivedPoints.pointsString()} за участие в голосовании!" +
+                "${receivedPoints.pointsString()} за оценку сессии и капельку везения! " +
                 "Всего очков: $total"
 
         client.chatPostMessage {
@@ -60,7 +59,7 @@ class SlackService {
     }
 
     fun postLotteryWinnersToThread(winners: List<String>, points: Int, channelId: String, threadId: String) {
-        val text = "В розыгрыше победили: ${winners.joinToString(",", transform = { it.userTag() })}! " +
+        val text = "В розыгрыше победили: ${winners.joinToString(", ", transform = { it.userTag() })}! " +
                 "Поздравляем! Вы получаете по ${points.pointsString()}"
 
         client.chatPostMessage {

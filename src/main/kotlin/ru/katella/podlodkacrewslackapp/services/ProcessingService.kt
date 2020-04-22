@@ -67,8 +67,9 @@ class ProcessingService {
         val users = messageInfo.reactions
             .flatMap { it.users }
             .distinct()
-            .filter { /*TODO раскомментить!!! !HOST_IDS.contains(it) && */it != botUser.userId }
+            .filter { !HOST_IDS.contains(it) && it != botUser.userId }
             .shuffled()
+
         if (op.participants > users.size) return
         val participants = users.take(op.participants)
 
