@@ -36,7 +36,7 @@ class SlackService {
         val channelName = configService.gameNotificationChannel
 
         val text = "${receivingUserId.userTag()} получает " +
-                "${receivedPoints.pointsString()} за оценку сессии и капельку везения! " +
+                "${receivedPoints.pointsString()} за участие в голосовании и капельку везения! " +
                 "Всего очков: $total"
 
         client.chatPostMessage {
@@ -81,9 +81,10 @@ class SlackService {
         var table = "*Топ-15 участников конкурса:*"
         var userPresentedInTop = false
         leaderBoard.take(15).forEachIndexed { index, user ->
+            val outputIndex = index + 1
             if (user.id == userId) userPresentedInTop = true
             val row = ROW_SEPARATOR +
-                    EMOJI_MAP.getOrDefault(index + 1, DEFAULT_EMOJI) +
+                    EMOJI_MAP.getOrElse(outputIndex, { if (outputIndex < 10) " $outputIndex. " else "$outputIndex. "} )+
                     user.id.userTag() + " – " + user.points.pointsString()
             table += row
         }
@@ -184,23 +185,10 @@ class SlackService {
 
     companion object {
         const val ROW_SEPARATOR = '\n'
-        const val DEFAULT_EMOJI = ":point_right:"
-        val EMOJI_MAP = mapOf<Int, String>(
-            1 to ":one:",
-            2 to ":two:",
-            3 to ":three:",
-            4 to ":four:",
-            5 to ":five:",
-            6 to ":six:",
-            7 to ":seven:",
-            8 to ":eight:",
-            9 to ":nine:",
-            10 to ":one::zero:",
-            11 to ":one::one:",
-            12 to ":one::two:",
-            13 to ":one::three:",
-            14 to ":one::four:",
-            15 to ":one::five:"
+        val EMOJI_MAP = mapOf(
+            1 to ":first_place_medal: ",
+            2 to ":second_place_medal: ",
+            3 to ":third_place_medal: "
         )
     }
 }
