@@ -35,8 +35,8 @@ class TildaCabinetController {
                         }
                         for (user in users) {
                             tr {
-                                td { +user.id }
-                                td { +user.displayName }
+                                td { +user.id.take(3) }
+                                td { +user.displayName.take(3) }
                                 td {
                                     input {
                                         type = InputType.checkBox
