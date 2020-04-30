@@ -22,30 +22,27 @@ class TildaCabinetController {
 
         val users = userRepository.findAll()
         return createHTML()
-            .html {
-                body {
-                    table {
-                        thead {
-                            tr {
-                                td { +"User id" }
-                                td { +"User name" }
-                                td { +"Is admin" }
-                                td { +"Points" }
+            .table {
+
+                thead {
+                    tr {
+                        td { +"User id" }
+                        td { +"User name" }
+                        td { +"Is admin" }
+                        td { +"Points" }
+                    }
+                }
+                for (user in users) {
+                    tr {
+                        td { +user.id.take(3) }
+                        td { +user.displayName.take(3) }
+                        td {
+                            input {
+                                type = InputType.checkBox
+                                checked = user.isAdmin
                             }
                         }
-                        for (user in users) {
-                            tr {
-                                td { +user.id.take(3) }
-                                td { +user.displayName.take(3) }
-                                td {
-                                    input {
-                                        type = InputType.checkBox
-                                        checked = user.isAdmin
-                                    }
-                                }
-                                td { +user.points.toString() }
-                            }
-                        }
+                        td { +user.points.toString() }
                     }
                 }
             }
