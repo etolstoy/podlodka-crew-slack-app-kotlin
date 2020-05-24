@@ -1,7 +1,6 @@
 package ru.katella.podlodkacrewslackapp.services
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.repositories.Message
 import ru.katella.podlodkacrewslackapp.repositories.ReactionsRepository
@@ -18,12 +17,12 @@ class ProcessingService {
     @Autowired
     lateinit var slackService: SlackService
 
-    fun processPoints(callingUser: String, mentionedUser: String, operation: PointsOperation, channelId: String) {
+    fun processPoints(callingUser: String, mentionedUser: String, operation: PointsOperation, teamId: String, channelId: String) {
 
-        val donator = getOrCreateUser(callingUser)
-        val recipient = getOrCreateUser(mentionedUser)
+        val donator = getOrCreateUser(teamId, callingUser)
+        val recipient = getOrCreateUser(teamId, mentionedUser)
 
-        val isCommandAllowed = slackService.isUserAdmin(callingUser)
+        val isCommandAllowed = slackService.isUserAdmin(teamId, callingUser)
         if (!isCommandAllowed) {
             return
         }
@@ -48,22 +47,23 @@ class ProcessingService {
             }
         }.apply {
             userRepository.saveAndFlush(recipient.copy(points = this))
-            slackService.postUserReceivedPointsFrom(mentionedUser, callingUser, received, this)
+            slackService.postUserReceivedPointsFrom(teamId, mentionedUser, callingUser, received, this)
         }
     }
 
     fun processLottery(callingUser: String,
                        mentionedUser: String,
                        op: Lottery,
+                       teamId: String,
                        channelId: String,
                        currentThread: String) {
-        val caller = getOrCreateUser(callingUser)
+        val caller = getOrCreateUser(teamId, callingUser)
         if (!caller.isAdmin) return
 
-        val botUser = slackService.slackUserInfo(mentionedUser)
+        val botUser = slackService.slackUserInfo(teamId, mentionedUser)
         if (!botUser.isBot && botUser.userName != BOT_NAME) return
 
-        val messageInfo = slackService.messageInfo(channelId, currentThread)
+        val messageInfo = slackService.messageInfo(teamId, channelId, currentThread)
         val users = messageInfo.reactions
             .flatMap { it.users }
             .distinct()
@@ -74,54 +74,59 @@ class ProcessingService {
         val participants = users.take(op.participants)
 
         val updatedUsers = participants.map {
-            val user = getOrCreateUser(it)
+            val user = getOrCreateUser(teamId, it)
             userRepository.saveAndFlush(user.copy(points = user.points + op.pointsPerParticipant))
         }
-        slackService.postLotteryWinnersToThread(participants, op.pointsPerParticipant, channelId, currentThread)
+        slackService.postLotteryWinnersToThread(teamId, participants, op.pointsPerParticipant, channelId, currentThread)
         updatedUsers.forEach {
-            slackService.postUserReceivedPointsForLottery(it.id, op.pointsPerParticipant, it.points)
+            slackService.postUserReceivedPointsForLottery(teamId, it.id, op.pointsPerParticipant, it.points)
         }
     }
 
-    fun processLeaderboard(channelId: String, userId: String) {
-        getOrCreateUser(userId)
-        val searchResult = userRepository.findAll(Sort.by(Sort.Direction.DESC, "points")).filter { !it.isAdmin }
+    fun processLeaderBoard(teamId: String, channelId: String, userId: String) {
+        getOrCreateUser(teamId, userId)
+        val searchResult = userRepository.findByTeamId(teamId).filter { !it.isAdmin }.sortedByDescending { it.points }
         if (searchResult.isEmpty()) {
             return
         }
-        slackService.postLeaderBoard(userId, channelId, searchResult)
+        slackService.postLeaderBoard(teamId, userId, channelId, searchResult)
     }
 
-    fun processBestHost(channelId: String) {
+    fun processBestHost(teamId: String, channelId: String) {
         val favoriteHostId = HOST_IDS.random()
-        slackService.postFavoriteHost(channelId, favoriteHostId)
+        slackService.postFavoriteHost(teamId, channelId, favoriteHostId)
     }
 
-    fun processNewReaction(channelId: String, reaction: String, receivingUser: String, reactingUser: String, messageTimestamp: String) {
+    fun processNewReaction(teamId: String,
+                           channelId: String,
+                           reaction: String,
+                           receivingUser: String,
+                           reactingUser: String,
+                           messageTimestamp: String) {
         if (reaction in TRIGGERING_REACTIONS) {
-            val message = slackService.messageInfo(channelId, messageTimestamp)
+            val message = slackService.messageInfo(teamId, channelId, messageTimestamp)
 
             val messageReactions = message.reactions.filter { it.name in TRIGGERING_REACTIONS }
             if (messageReactions.all { it.count < REACTIONS_FOR_PRIZE }) return
 
-            val dbMessage = reactionsRepository.findByTimestampAndChannel(messageTimestamp, channelId)
+            val dbMessage = reactionsRepository.findByTimestampAndTeamIdAndChannel(messageTimestamp, teamId, channelId)
             if (dbMessage.isNotEmpty()) return
 
-            val user = getOrCreateUser(receivingUser)
+            val user = getOrCreateUser(teamId, receivingUser)
             val newPoints = user.points + POINTS_FOR_REACTIONS
             userRepository.saveAndFlush(user.copy(points = newPoints))
-            reactionsRepository.saveAndFlush(Message(messageTimestamp, channelId))
-            slackService.postUserReceivedPointsForReactions(message.permalink, receivingUser, POINTS_FOR_REACTIONS, newPoints)
+            reactionsRepository.saveAndFlush(Message(messageTimestamp, teamId, channelId))
+            slackService.postUserReceivedPointsForReactions(teamId, message.permalink, receivingUser, POINTS_FOR_REACTIONS, newPoints)
         }
     }
 
-    fun processReset(channelId: String, userId: String) {
-        val user = slackService.slackUserInfo(userId)
+    fun processReset(teamId: String, channelId: String, userId: String) {
+        val user = slackService.slackUserInfo(teamId, userId)
         if (user.isAdmin) {
-            reactionsRepository.deleteAll()
+            reactionsRepository.deleteByTeamId(teamId)
             userRepository.deleteAll()
         } else {
-            slackService.postEphemeralMessage(channelId,
+            slackService.postEphemeralMessage(teamId, channelId,
                 userId,
                 "Эх, вот бы сейчас все *обнулить* да начать сначала? Но нет, эта опция только для админов ;)")
         }
@@ -129,10 +134,10 @@ class ProcessingService {
 
 
 
-    fun getOrCreateUser(userId: String): User {
+    fun getOrCreateUser(teamId: String, userId: String): User {
         return userRepository.findById(userId).orElseGet {
-            val slackUser = slackService.slackUserInfo(userId)
-            userRepository.saveAndFlush(User(userId, slackUser.userName, slackUser.isAdmin))
+            val slackUser = slackService.slackUserInfo(teamId, userId)
+            userRepository.saveAndFlush(User(userId, slackUser.userName, slackUser.teamId, slackUser.isAdmin))
         }
     }
 

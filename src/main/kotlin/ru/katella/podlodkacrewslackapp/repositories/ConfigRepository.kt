@@ -7,8 +7,10 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 @Repository
-interface ConfigRepository: JpaRepository<Config, Int>
+interface ConfigRepository: JpaRepository<Config, String>
 
 @Entity
 @Table(name = "config")
-data class Config(@Id val id: Int, var gameNotificationsChannel: String = "scoring")
+data class Config(@Id val teamId: String,
+                  var gameNotificationsChannel: String = "scoring",
+                  var gameIsActive: Boolean = false)

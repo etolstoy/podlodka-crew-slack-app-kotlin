@@ -2,8 +2,6 @@ package ru.katella.podlodkacrewslackapp.services
 
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostEphemeralRequest
-import com.slack.api.methods.request.reactions.ReactionsGetRequest
-import com.slack.api.methods.request.users.UsersInfoRequest
 import com.slack.api.methods.response.reactions.ReactionsGetResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -18,8 +16,8 @@ class SlackService {
     @Autowired
     lateinit var configService: ConfigService
 
-    fun postUserReceivedPointsFrom(receivingUserId: String, donatingUserId: String, receivedPoints: Int, total: Int) {
-        val channelName = configService.gameNotificationChannel
+    fun postUserReceivedPointsFrom(teamId: String, receivingUserId: String, donatingUserId: String, receivedPoints: Int, total: Int) {
+        val channelName = configService.getGameNotificationChannel(teamId)
 
         val text = "${receivingUserId.userTag()} получает " +
                 "${receivedPoints.pointsString()} от " +
@@ -27,57 +25,62 @@ class SlackService {
                 "Всего очков: $total"
 
         client.chatPostMessage {
-            it.channel(channelName)
+            it.token(getSlackToken(teamId))
+                .channel(channelName)
                 .text(text)
         }
     }
 
-    fun postUserReceivedPointsForLottery(receivingUserId: String, receivedPoints: Int, total: Int) {
-        val channelName = configService.gameNotificationChannel
+    fun postUserReceivedPointsForLottery(teamId: String, receivingUserId: String, receivedPoints: Int, total: Int) {
+        val channelName = configService.getGameNotificationChannel(teamId)
 
         val text = "${receivingUserId.userTag()} получает " +
                 "${receivedPoints.pointsString()} за участие в голосовании и капельку везения! " +
                 "Всего очков: $total"
 
         client.chatPostMessage {
-            it.channel(channelName)
+            it.token(getSlackToken(teamId))
+                .channel(channelName)
                 .text(text)
         }
     }
 
-    fun postUserReceivedPointsForReactions(originalMessage: String, receivingUserId: String, receivedPoints: Int, total: Int) {
-        val channelName = configService.gameNotificationChannel
+    fun postUserReceivedPointsForReactions(teamId: String, originalMessage: String, receivingUserId: String, receivedPoints: Int, total: Int) {
+        val channelName = configService.getGameNotificationChannel(teamId)
 
         val text = "${receivingUserId.userTag()} получает " +
                 "${receivedPoints.pointsString()} за десять или более :thumbsup: <$originalMessage|здесь> \nВсего очков: *$total*"
 
         client.chatPostMessage {
-            it.channel(channelName)
+            it.token(getSlackToken(teamId))
+                .channel(channelName)
                 .unfurlLinks(true)
                 .text(text)
         }
     }
 
-    fun postLotteryWinnersToThread(winners: List<String>, points: Int, channelId: String, threadId: String) {
+    fun postLotteryWinnersToThread(teamId: String, winners: List<String>, points: Int, channelId: String, threadId: String) {
         val text = "В розыгрыше победили: ${winners.joinToString(", ", transform = { it.userTag() })}! " +
                 "Поздравляем! Вы получаете по ${points.pointsString()}"
 
         client.chatPostMessage {
-            it.channel(channelId)
+            it.token(getSlackToken(teamId))
+                .channel(channelId)
                 .threadTs(threadId)
                 .text(text)
         }
     }
 
-    fun postEphemeralMessage(channelId: String, userId: String, text: String) {
+    fun postEphemeralMessage(teamId: String, channelId: String, userId: String, text: String) {
         client.chatPostEphemeral {
-            it.channel(channelId)
+            it.token(getSlackToken(teamId))
+                .channel(channelId)
                 .user(userId)
                 .text(text)
         }
     }
 
-    fun postLeaderBoard(userId: String, channel: String, leaderBoard: List<User>) {
+    fun postLeaderBoard(teamId: String, userId: String, channel: String, leaderBoard: List<User>) {
         var table = "*Топ-15 участников конкурса:*"
         var userPresentedInTop = false
         leaderBoard.take(15).forEachIndexed { index, user ->
@@ -90,13 +93,15 @@ class SlackService {
         }
 
         client.chatPostMessage {
-            it.channel(channel)
+            it.token(getSlackToken(teamId))
+                .channel(channel)
                 .mrkdwn(true)
                 .text(table)
         }
         if (!userPresentedInTop) {
             val index = leaderBoard.indexOfFirst { it.id == userId }
             val builder = ChatPostEphemeralRequest.builder()
+                .token(getSlackToken(teamId))
                 .channel(channel)
                 .user(userId)
 
@@ -115,7 +120,7 @@ class SlackService {
         }
     }
 
-    fun postFavoriteHost(channel: String, hostId: String) {
+    fun postFavoriteHost(teamId: String, channel: String, hostId: String) {
 
         val texts = listOf(
             "Опросы релевантной аудитории показали, что лучше всех подкаст \"Подлодка\" ведет ${hostId.userTag()}",
@@ -128,32 +133,33 @@ class SlackService {
         )
         val randomText = texts.random()
         client.chatPostMessage {
-            it.channel(channel)
+            it.token(getSlackToken(teamId))
+                .channel(channel)
                 .text(randomText)
         }
     }
 
-    fun messageInfo(channelId: String, messageTimestamp: String): ReactionsGetResponse.Message {
-        val request = ReactionsGetRequest.builder()
-            .channel(channelId)
-            .timestamp(messageTimestamp)
-            .build()
-        val response = client.reactionsGet(request)
+    fun messageInfo(teamId: String, channelId: String, messageTimestamp: String): ReactionsGetResponse.Message {
+        val response = client.reactionsGet {
+            it.token(getSlackToken(teamId))
+                .channel(channelId)
+                .timestamp(messageTimestamp)
+        }
         return response.message
     }
 
-    fun slackUserInfo(userId: String): SlackUser {
-        val request = UsersInfoRequest.builder()
-            .user(userId)
-            .build()
-        val slackUser = client.usersInfo(request).user
+    fun slackUserInfo(teamId: String, userId: String): SlackUser {
+        val slackUser = client.usersInfo {
+            it.token(getSlackToken(teamId))
+                .user(userId)
+        }.user
 
-        return SlackUser(slackUser.id, slackUser.realName, slackUser.isAdmin, slackUser.isBot)
+        return SlackUser(slackUser.id, slackUser.realName, slackUser.teamId, slackUser.isAdmin, slackUser.isBot)
     }
 
-    fun isUserAdmin(userId: String): Boolean {
+    fun isUserAdmin(teamId: String, userId: String): Boolean {
         return try {
-            val user = slackUserInfo(userId)
+            val user = slackUserInfo(teamId, userId)
             user.isAdmin
         } catch (ex: Exception) {
             false
@@ -163,7 +169,7 @@ class SlackService {
     private fun String.userTag(): String = "<@$this>"
 
     private fun Int.pointsString(): String {
-        var result = "${this.toString()} "
+        var result = "$this "
         val abs = this.absoluteValue
         result += when (abs) {
             0, in 5..20 -> "очков"
@@ -181,7 +187,9 @@ class SlackService {
         return result
     }
 
-    data class SlackUser(val userId: String, val userName: String, val isAdmin: Boolean, val isBot: Boolean)
+    private fun getSlackToken(teamId: String): String = System.getenv("SLACK_BOT_TOKEN_$teamId")
+
+    data class SlackUser(val userId: String, val userName: String, val teamId: String, val isAdmin: Boolean, val isBot: Boolean)
 
     companion object {
         const val ROW_SEPARATOR = '\n'

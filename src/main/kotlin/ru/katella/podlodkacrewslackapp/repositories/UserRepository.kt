@@ -7,8 +7,10 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 @Repository
-interface UserRepository: JpaRepository<User, String>
+interface UserRepository: JpaRepository<User, String> {
+    fun findByTeamId(teamId: String): List<User>
+}
 
 @Entity
 @Table(name = "users")
-data class User(@Id val id: String, val displayName: String, val isAdmin: Boolean, var points: Int = 0)
+data class User(@Id val id: String, val displayName: String, val teamId: String, val isAdmin: Boolean, var points: Int = 0)

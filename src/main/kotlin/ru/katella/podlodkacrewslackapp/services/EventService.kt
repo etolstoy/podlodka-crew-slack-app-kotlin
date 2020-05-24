@@ -13,7 +13,7 @@ class EventService {
     @Autowired
     lateinit var processingService: ProcessingService
 
-    fun processMessage(message: MessageEvent) {
+    fun processMessage(teamId: String, message: MessageEvent) {
 
         val currentChannel = message.channel
         val currentUser = message.user
@@ -34,10 +34,10 @@ class EventService {
                             if (shouldCheckTextField) {
 
                                 when (val command = parseCommand(innerPart.text)) {
-                                    is PointsOperation -> processingService.processPoints(currentUser, userId!!, command, currentChannel)
+                                    is PointsOperation -> processingService.processPoints(currentUser, userId!!, command, teamId, currentChannel)
                                     is Lottery -> {
                                         if (message.threadTs == null) return //if raffle is made on a top level (= outside of thread), just skip it
-                                        processingService.processLottery(currentUser, userId!!, command, currentChannel, message.threadTs)
+                                        processingService.processLottery(currentUser, userId!!, command, teamId, currentChannel, message.threadTs)
                                     }
                                     is NoOp -> return
                                 }
@@ -50,8 +50,9 @@ class EventService {
         }
     }
 
-    fun processReaction(event: ReactionAddedEvent) {
+    fun processReaction(teamId: String, event: ReactionAddedEvent) {
         processingService.processNewReaction(
+            teamId,
             event.item.channel,
             event.reaction,
             event.itemUser,

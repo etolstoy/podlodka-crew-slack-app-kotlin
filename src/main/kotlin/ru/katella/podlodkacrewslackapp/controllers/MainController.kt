@@ -15,19 +15,22 @@ class MainController {
     private lateinit var processingService: ProcessingService
 
     @PostMapping("/leaderboard")
-    fun greetings(@RequestParam(name = "channel_id") channelId: String,
+    fun leaderBoard(@RequestParam(name = "team_id") teamId: String,
+                  @RequestParam(name = "channel_id") channelId: String,
                   @RequestParam(name = "user_id") userId: String) {
-        processingService.processLeaderboard(channelId, userId)
+        processingService.processLeaderBoard(teamId, channelId, userId)
     }
 
     @PostMapping("/best_host")
-    fun bestHost(@RequestParam(name = "channel_id") channelId: String) {
-        processingService.processBestHost(channelId)
+    fun bestHost(@RequestParam(name = "team_id") teamId: String,
+                 @RequestParam(name = "channel_id") channelId: String) {
+        processingService.processBestHost(teamId, channelId)
     }
 
     @PostMapping("/reset_score")
-    fun resetScore(@RequestParam(name = "channel_id") channelId: String,
+    fun resetScore(@RequestParam(name = "team_id") teamId: String,
+                   @RequestParam(name = "channel_id") channelId: String,
                    @RequestParam(name = "user_id") userId: String) {
-        processingService.processReset(channelId, userId)
+        processingService.processReset(teamId, channelId, userId)
     }
 }

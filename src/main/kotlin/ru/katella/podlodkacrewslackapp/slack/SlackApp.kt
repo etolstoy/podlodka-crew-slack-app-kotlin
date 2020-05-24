@@ -25,12 +25,13 @@ class SlackApp {
             return@SlashCommandHandler ctx.ack("What's up")
         })
         app.event(MessageEvent::class.java, BoltEventHandler { event, ctx ->
-            eventService.processMessage(message = event.event)
+
+            eventService.processMessage(ctx.teamId, message = event.event)
 
             ctx.ack()
         })
         app.event(ReactionAddedEvent::class.java, BoltEventHandler { event, ctx ->
-            eventService.processReaction(event.event)
+            eventService.processReaction(ctx.teamId, event.event)
             ctx.ack()
         })
         return app
@@ -38,7 +39,6 @@ class SlackApp {
 
     @Bean
     fun methodClient(): MethodsClient {
-        val token = System.getenv("SLACK_BOT_TOKEN")
-        return Slack.getInstance().methods(token)
+        return Slack.getInstance().methods()
     }
 }
