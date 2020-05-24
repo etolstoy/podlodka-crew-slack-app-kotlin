@@ -20,7 +20,7 @@ class SlackApp {
 
     @Bean
     fun initSlackApp(): App {
-        val app = App()
+        val app = ExtendedSlackBoltApp()
         app.command("hello", SlashCommandHandler { _, ctx ->
             return@SlashCommandHandler ctx.ack("What's up")
         })

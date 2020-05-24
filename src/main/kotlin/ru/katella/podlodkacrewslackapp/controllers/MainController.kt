@@ -1,7 +1,10 @@
 package ru.katella.podlodkacrewslackapp.controllers
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import ru.katella.podlodkacrewslackapp.services.ProcessingService
 
 @RequestMapping("/slack")
@@ -44,16 +47,4 @@ class MainController {
                   @RequestParam(name = "user_id") userId: String) {
         processingService.processStartStopGame(teamId, channelId, userId, false)
     }
-
-    @PostMapping("/events")
-    fun events(@RequestBody body: EventsHandshakeBody): String {
-
-        return if (body.type != "url_verification") {
-            "wrong type!"
-        } else {
-            body.challenge
-        }
-    }
-
-    data class EventsHandshakeBody(val token: String, val challenge: String, val type: String)
 }
