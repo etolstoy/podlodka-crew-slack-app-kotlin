@@ -47,4 +47,11 @@ class MainController {
                   @RequestParam(name = "user_id") userId: String) {
         processingService.processStartStopGame(teamId, channelId, userId, false)
     }
+
+    @PostMapping("/install")
+    fun install(@RequestParam params: Map<String, String>) {
+        params.forEach {(k, v) ->
+            println("$k   ->   $v")
+        }
+    }
 }
