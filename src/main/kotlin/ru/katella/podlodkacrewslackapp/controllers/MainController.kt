@@ -52,8 +52,10 @@ class MainController {
     @GetMapping("/install")
     fun install(@RequestParam(name = "code") code: String): String {
 
+        val redirectUrl = System.getenv("REDIRECT_URL")
         val response = methodClient.oauthAccess {
             it.code(code)
+                .redirectUri(redirectUrl)
         }
         return response.accessToken
     }
