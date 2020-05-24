@@ -9,9 +9,3 @@ spring:
     properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-  datasource:
-    platform: postgres
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:${DB_PATH}
-    username: ${DB_USER}
-    password: ${DB_SECRET}

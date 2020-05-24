@@ -2,8 +2,8 @@ package ru.katella.podlodkacrewslackapp.services
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.repositories.Config
-import ru.katella.podlodkacrewslackapp.repositories.ConfigRepository
+import ru.katella.podlodkacrewslackapp.data.repositories.Config
+import ru.katella.podlodkacrewslackapp.data.repositories.ConfigRepository
 
 @Service
 class ConfigService {

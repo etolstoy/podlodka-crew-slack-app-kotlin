@@ -2,10 +2,10 @@ package ru.katella.podlodkacrewslackapp.services
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.repositories.Message
-import ru.katella.podlodkacrewslackapp.repositories.ReactionsRepository
-import ru.katella.podlodkacrewslackapp.repositories.User
-import ru.katella.podlodkacrewslackapp.repositories.UserRepository
+import ru.katella.podlodkacrewslackapp.data.repositories.Message
+import ru.katella.podlodkacrewslackapp.data.repositories.ReactionsRepository
+import ru.katella.podlodkacrewslackapp.data.repositories.User
+import ru.katella.podlodkacrewslackapp.data.repositories.UserRepository
 
 @Service
 class ProcessingService {

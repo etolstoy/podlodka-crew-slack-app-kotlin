@@ -5,7 +5,7 @@ import com.slack.api.methods.request.chat.ChatPostEphemeralRequest
 import com.slack.api.methods.response.reactions.ReactionsGetResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.repositories.User
+import ru.katella.podlodkacrewslackapp.data.repositories.User
 import kotlin.math.absoluteValue
 
 @Service
