@@ -24,5 +24,17 @@ class ConfigService {
         }
     }
 
+    fun isGameActive(teamId: String): Boolean = getConfig(teamId).gameIsActive
+
+    fun setGameActive(teamId: String, isActive: Boolean) {
+        val config = getConfig(teamId)
+        if (config.gameIsActive == isActive) {
+            return
+        } else {
+            val newConfig = config.copy(gameIsActive = isActive)
+            configRepository.saveAndFlush(newConfig)
+        }
+    }
+
     fun getGameNotificationChannel(teamId: String): String = getConfig(teamId).gameNotificationsChannel
 }

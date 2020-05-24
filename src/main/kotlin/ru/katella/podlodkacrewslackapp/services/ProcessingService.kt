@@ -16,6 +16,8 @@ class ProcessingService {
     lateinit var reactionsRepository: ReactionsRepository
     @Autowired
     lateinit var slackService: SlackService
+    @Autowired
+    lateinit var configService: ConfigService
 
     fun processPoints(callingUser: String, mentionedUser: String, operation: PointsOperation, teamId: String, channelId: String) {
 
@@ -26,6 +28,8 @@ class ProcessingService {
         if (!isCommandAllowed) {
             return
         }
+
+        if (!checkGameIsStarted(teamId, channelId, callingUser)) return
 
         var received = 0
         val total = when (operation) {
@@ -59,6 +63,7 @@ class ProcessingService {
                        currentThread: String) {
         val caller = getOrCreateUser(teamId, callingUser)
         if (!caller.isAdmin) return
+        if (!checkGameIsStarted(teamId, channelId, callingUser)) return
 
         val botUser = slackService.slackUserInfo(teamId, mentionedUser)
         if (!botUser.isBot && botUser.userName != BOT_NAME) return
@@ -103,6 +108,8 @@ class ProcessingService {
                            receivingUser: String,
                            reactingUser: String,
                            messageTimestamp: String) {
+        if (!checkGameIsStarted(teamId, channelId)) return
+
         if (reaction in TRIGGERING_REACTIONS) {
             val message = slackService.messageInfo(teamId, channelId, messageTimestamp)
 
@@ -121,20 +128,48 @@ class ProcessingService {
     }
 
     fun processReset(teamId: String, channelId: String, userId: String) {
-        val user = slackService.slackUserInfo(teamId, userId)
+        val user = getOrCreateUser(teamId, userId)
         if (user.isAdmin) {
             reactionsRepository.deleteByTeamId(teamId)
             userRepository.deleteAll()
         } else {
-            slackService.postEphemeralMessage(teamId, channelId,
+            slackService.postEphemeralMessage(teamId,
+                channelId,
                 userId,
                 "Эх, вот бы сейчас все *обнулить* да начать сначала? Но нет, эта опция только для админов ;)")
         }
     }
 
+    fun processStartStopGame(teamId: String, channelId: String, userId: String, gameStarted: Boolean) {
+        val user = getOrCreateUser(teamId, userId)
+        if (!user.isAdmin) {
+            slackService.postEphemeralMessage(teamId,
+                channelId,
+                userId,
+                "Нельзя так просто взять и порулить игрой, когда ты не админ!")
+        } else {
+            configService.setGameActive(teamId, gameStarted)
 
+            val gameStatus = if (gameStarted) "начата" else "остановлена"
+            slackService.postEphemeralMessage(teamId,
+                channelId,
+                userId,
+                "Игра $gameStatus!")
+        }
+    }
 
-    fun getOrCreateUser(teamId: String, userId: String): User {
+    private fun checkGameIsStarted(teamId: String, channelId: String, notifiedUser: String? = null): Boolean {
+        return if (!configService.isGameActive(teamId)) {
+            if (notifiedUser != null) {
+                slackService.postEphemeralMessage(teamId, channelId, notifiedUser, "Игра еще не начата!")
+            }
+            false
+        } else {
+            true
+        }
+    }
+
+    private fun getOrCreateUser(teamId: String, userId: String): User {
         return userRepository.findById(userId).orElseGet {
             val slackUser = slackService.slackUserInfo(teamId, userId)
             userRepository.saveAndFlush(User(userId, slackUser.userName, slackUser.teamId, slackUser.isAdmin))

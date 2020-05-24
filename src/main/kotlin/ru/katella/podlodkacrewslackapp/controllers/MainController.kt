@@ -33,4 +33,11 @@ class MainController {
                    @RequestParam(name = "user_id") userId: String) {
         processingService.processReset(teamId, channelId, userId)
     }
+
+    @PostMapping("/start_game")
+    fun startGame(@RequestParam(name = "team_id") teamId: String,
+                  @RequestParam(name = "channel_id") channelId: String,
+                  @RequestParam(name = "user_id") userId: String) {
+
+    }
 }
