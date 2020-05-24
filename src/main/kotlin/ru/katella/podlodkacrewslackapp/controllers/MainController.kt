@@ -38,6 +38,13 @@ class MainController {
     fun startGame(@RequestParam(name = "team_id") teamId: String,
                   @RequestParam(name = "channel_id") channelId: String,
                   @RequestParam(name = "user_id") userId: String) {
+        processingService.processStartStopGame(teamId, channelId, userId, true)
+    }
 
+    @PostMapping("/stop_game")
+    fun stopGame(@RequestParam(name = "team_id") teamId: String,
+                  @RequestParam(name = "channel_id") channelId: String,
+                  @RequestParam(name = "user_id") userId: String) {
+        processingService.processStartStopGame(teamId, channelId, userId, false)
     }
 }
