@@ -1,5 +1,6 @@
 package ru.katella.podlodkacrewslackapp.controllers
 
+import com.slack.api.methods.MethodsClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import ru.katella.podlodkacrewslackapp.services.ProcessingService
@@ -10,6 +11,9 @@ class MainController {
 
     @Autowired
     private lateinit var processingService: ProcessingService
+
+    @Autowired
+    private lateinit var methodClient: MethodsClient
 
     @PostMapping("/leaderboard")
     fun leaderBoard(@RequestParam(name = "team_id") teamId: String,
@@ -46,9 +50,11 @@ class MainController {
     }
 
     @GetMapping("/install")
-    fun install(@RequestParam params: Map<String, String>) {
-        params.forEach {(k, v) ->
-            println("$k   ->   $v")
+    fun install(@RequestParam(name = "code") code: String): String {
+
+        val response = methodClient.oauthAccess {
+            it.code(code)
         }
+        return response.accessToken
     }
 }
