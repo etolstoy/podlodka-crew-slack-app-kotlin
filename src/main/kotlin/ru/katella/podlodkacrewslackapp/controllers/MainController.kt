@@ -1,6 +1,5 @@
 package ru.katella.podlodkacrewslackapp.controllers
 
-import com.slack.api.methods.MethodsClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import ru.katella.podlodkacrewslackapp.services.ProcessingService
@@ -11,9 +10,6 @@ class MainController {
 
     @Autowired
     private lateinit var processingService: ProcessingService
-
-    @Autowired
-    private lateinit var methodClient: MethodsClient
 
     @PostMapping("/leaderboard")
     fun leaderBoard(@RequestParam(name = "team_id") teamId: String,
@@ -49,14 +45,14 @@ class MainController {
         processingService.processStartStopGame(teamId, channelId, userId, false)
     }
 
-    @GetMapping("/install")
-    fun install(@RequestParam(name = "code") code: String): String {
+    @GetMapping("/events")
+    fun events(@RequestParam(name = "challenge") challenge: String,
+                @RequestParam(name = "type") type: String): String {
 
-        val redirectUrl = System.getenv("REDIRECT_URL")
-        val response = methodClient.oauthAccess {
-            it.code(code)
-                .redirectUri(redirectUrl)
+        return if (type != "url_verification") {
+            "wrong type!"
+        } else {
+            challenge
         }
-        return response.accessToken
     }
 }
