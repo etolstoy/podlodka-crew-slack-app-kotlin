@@ -17,7 +17,7 @@ class CustomRequestVerification(private val verifiers: List<SlackSignature.Verif
         return if (isValid) {
             chain!!.next(req)
         } else {
-            val signature = req!!.headers.getFirstValue(SlackSignature.HeaderNames.X_SLACK_SIGNATURE)
+            val signature = req.headers.getFirstValue(SlackSignature.HeaderNames.X_SLACK_SIGNATURE)
             println("Invalid signature detected - $signature")
             Response.json(401, "{\"error\":\"invalid request\"}")
         }

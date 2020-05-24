@@ -148,6 +148,17 @@ class SlackService {
         return response.message
     }
 
+    fun slackUsersList(teamId: String): List<SlackUser> {
+        val users = client.usersList {
+            it.token(getSlackToken(teamId))
+        }
+        return users.members.map { SlackUser(it.id, it.realName, it.teamId, it.isAdmin, it.isBot) }
+    }
+
+    fun slackAdminsList(teamId: String): List<SlackUser> = slackUsersList(teamId).filter { it.isAdmin }
+
+    fun slackBotsList(teamId: String): List<SlackUser> = slackUsersList(teamId).filter { it.isBot }
+
     fun slackUserInfo(teamId: String, userId: String): SlackUser {
         val slackUser = client.usersInfo {
             it.token(getSlackToken(teamId))

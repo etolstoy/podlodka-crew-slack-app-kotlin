@@ -68,11 +68,13 @@ class ProcessingService {
         val botUser = slackService.slackUserInfo(teamId, mentionedUser)
         if (!botUser.isBot && botUser.userName != BOT_NAME) return
 
+        val admins = slackService.slackAdminsList(teamId).map { it.userId }
+
         val messageInfo = slackService.messageInfo(teamId, channelId, currentThread)
         val users = messageInfo.reactions
             .flatMap { it.users }
             .distinct()
-            .filter { !HOST_IDS.contains(it) && it != botUser.userId }
+            .filter { !admins.contains(it) && it != botUser.userId}
             .shuffled()
 
         if (op.participants > users.size) return
@@ -98,7 +100,7 @@ class ProcessingService {
     }
 
     fun processBestHost(teamId: String, channelId: String) {
-        val favoriteHostId = HOST_IDS.random()
+        val favoriteHostId = HOST_IDS[teamId]?.random() ?: return
         slackService.postFavoriteHost(teamId, channelId, favoriteHostId)
     }
 
@@ -180,9 +182,23 @@ class ProcessingService {
         private const val REACTIONS_FOR_PRIZE = 10
         private const val POINTS_FOR_REACTIONS = 10
         //TODO remove hardcoded bot name
-        private const val BOT_NAME = "Skipper Bot"
+        private val BOT_NAME = System.getenv("BOT_NAME")
         private val TRIGGERING_REACTIONS = listOf("thumbsup", "+1")
         //TODO remove hardcoded IDs
-        private val HOST_IDS = listOf("U011BT88CDR", "U011A80PMQT", "U011EESQ0G6", "U011F6VEEUV")
+        private val HOST_IDS = getHosts()
+
+        private fun getHosts(): Map<String, List<String>> {
+            val hostsString = System.getenv("PODLODKA_HOSTS")
+            val idsMap = mutableMapOf<String, List<String>>()
+            hostsString.split(",")
+                .map { it.split("_") }
+                .map { it[0] to it[1].split(":") }
+                .forEach { (team, ids) ->
+                    idsMap[team] = ids
+                }
+            return idsMap
+        }
     }
+
+
 }
