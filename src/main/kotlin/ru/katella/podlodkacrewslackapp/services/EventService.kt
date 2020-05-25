@@ -15,6 +15,9 @@ class EventService {
 
     fun processMessage(teamId: String, message: MessageEvent) {
 
+        // dirty fix, because self-ignore middleware inexplicably broken =/
+        if (message.botId != null) return
+
         val currentChannel = message.channel
         val currentUser = message.user
         message.blocks.forEach { block ->
