@@ -33,6 +33,7 @@ class ConfigService {
         } else {
             val newConfig = config.copy(gameIsActive = isActive)
             configRepository.saveAndFlush(newConfig)
+            configsCache[teamId] = newConfig
         }
     }
 
