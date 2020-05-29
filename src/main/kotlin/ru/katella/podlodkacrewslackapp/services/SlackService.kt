@@ -82,11 +82,17 @@ class SlackService {
 
     fun postLeaderBoard(teamId: String, userId: String, channel: String, leaderBoard: List<User>) {
         var table = "*Топ-15 участников конкурса:*"
-        var userPresentedInTop = false
-        leaderBoard.take(15).forEachIndexed { index, user ->
+        var isUserPresentedInTop = false
+        leaderBoard.take(20).forEachIndexed { index, user ->
             val outputIndex = index + 1
-            if (user.id == userId) userPresentedInTop = true
-            val row = ROW_SEPARATOR +
+            if (user.id == userId) isUserPresentedInTop = true
+            val separator: String = if (index == 15) {
+                "$ROW_SEPARATOR*Участники, которым нужно чуть-чуть поднажать, чтобы ворваться в топ!*:runner::muscle::top:"
+            } else {
+                ROW_SEPARATOR.toString()
+            }
+
+            val row = separator +
                     EMOJI_MAP.getOrElse(outputIndex, { if (outputIndex < 10) "  $outputIndex. " else "$outputIndex. "} )+
                     user.id.userTag() + " – " + user.points.pointsString()
             table += row
@@ -98,7 +104,7 @@ class SlackService {
                 .mrkdwn(true)
                 .text(table)
         }
-        if (!userPresentedInTop) {
+        if (!isUserPresentedInTop) {
             val index = leaderBoard.indexOfFirst { it.id == userId }
             val builder = ChatPostEphemeralRequest.builder()
                 .token(getSlackToken(teamId))
