@@ -87,7 +87,7 @@ class SlackService {
             val outputIndex = index + 1
             if (user.id == userId) isUserPresentedInTop = true
             val separator: String = if (index == 15) {
-                "$ROW_SEPARATOR*Участники, которым нужно чуть-чуть поднажать, чтобы ворваться в топ!*:runner::muscle::top:"
+                "$ROW_SEPARATOR*Участники, которым нужно чуть-чуть поднажать, чтобы ворваться в топ!*:runner::muscle::top:$ROW_SEPARATOR"
             } else {
                 ROW_SEPARATOR.toString()
             }
