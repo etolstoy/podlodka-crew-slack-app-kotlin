@@ -158,10 +158,10 @@ class SlackService {
         val users = client.usersList {
             it.token(getSlackToken(teamId))
         }
-        users.members.forEach {
-            println("DEBUG USERS: ${it.id} ${it.realName} ${it.isAdmin} ${it.isBot}")
+        return users.members.map {
+            val name = it.realName ?: it.name
+            SlackUser(it.id, name ?: "", it.teamId, it.isAdmin, it.isBot)
         }
-        return users.members.map { SlackUser(it.id, it.realName, it.teamId, it.isAdmin, it.isBot) }
     }
 
     fun slackAdminsList(teamId: String): List<SlackUser> = slackUsersList(teamId).filter { it.isAdmin }
