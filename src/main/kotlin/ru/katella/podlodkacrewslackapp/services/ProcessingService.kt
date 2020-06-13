@@ -6,6 +6,7 @@ import ru.katella.podlodkacrewslackapp.data.repositories.Message
 import ru.katella.podlodkacrewslackapp.data.repositories.ReactionsRepository
 import ru.katella.podlodkacrewslackapp.data.repositories.User
 import ru.katella.podlodkacrewslackapp.data.repositories.UserRepository
+import ru.katella.podlodkacrewslackapp.data.slack.isUseful
 
 @Service
 class ProcessingService {
@@ -111,23 +112,23 @@ class ProcessingService {
                            reactingUser: String,
                            messageTimestamp: String) {
         if (!checkGameIsStarted(teamId, channelId)) return
+        if (reaction !in TRIGGERING_REACTIONS) return
 
-        if (reaction in TRIGGERING_REACTIONS) {
-            val message = slackService.messageInfo(teamId, channelId, messageTimestamp)
+        val message = slackService.messageInfo(teamId, channelId, messageTimestamp)
+        if (!message.isUseful(TRIGGERING_REACTIONS)) return
 
-            val messageReactions = message.reactions.filter { it.name in TRIGGERING_REACTIONS }
-            if (messageReactions.all { it.count < REACTIONS_FOR_PRIZE }) return
+        val messageReactions = message.reactions.filter { it.name in TRIGGERING_REACTIONS }
+        if (messageReactions.all { it.count < REACTIONS_FOR_PRIZE }) return
 
-            val dbMessage = reactionsRepository.findByTimestampAndTeamIdAndChannel(messageTimestamp, teamId, channelId)
-            if (dbMessage.isNotEmpty()) return
+        val dbMessage = reactionsRepository.findByTimestampAndTeamIdAndChannel(messageTimestamp, teamId, channelId)
+        if (dbMessage.isNotEmpty()) return
 
-            val user = getOrCreateUser(teamId, receivingUser)
-            val newPoints = user.points + POINTS_FOR_REACTIONS
-            userRepository.saveAndFlush(user.copy(points = newPoints))
-            reactionsRepository.saveAndFlush(Message(messageTimestamp, teamId, channelId))
-            slackService.postUserReceivedPointsForReactions(teamId, message.permalink, receivingUser, POINTS_FOR_REACTIONS, newPoints)
+        val user = getOrCreateUser(teamId, receivingUser)
+        val newPoints = user.points + POINTS_FOR_REACTIONS
+        userRepository.saveAndFlush(user.copy(points = newPoints))
+        reactionsRepository.saveAndFlush(Message(messageTimestamp, teamId, channelId))
+        slackService.postUserReceivedPointsForReactions(teamId, message.permalink, receivingUser, POINTS_FOR_REACTIONS, newPoints)
         }
-    }
 
     fun processReset(teamId: String, channelId: String, userId: String) {
         val user = getOrCreateUser(teamId, userId)
@@ -183,9 +184,9 @@ class ProcessingService {
         private const val POINTS_FOR_REACTIONS = 10
         //TODO remove hardcoded bot name
         private val BOT_NAME = System.getenv("BOT_NAME")
-        private val TRIGGERING_REACTIONS = listOf("thumbsup", "+1")
+        internal val TRIGGERING_REACTIONS = listOf("thumbsup", "+1")
         //TODO remove hardcoded IDs
-        private val HOST_IDS = getHosts()
+        private val HOST_IDS by lazy { getHosts() }
 
         private fun getHosts(): Map<String, List<String>> {
             val hostsString = System.getenv("PODLODKA_HOSTS")
