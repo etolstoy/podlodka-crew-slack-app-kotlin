@@ -36,6 +36,8 @@ dependencies {
 
     runtime 'org.postgresql:postgresql'
     implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.3.71"
+
+    testImplementation 'junit:junit:4.13'
 }
 
 compileKotlin {
