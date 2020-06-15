@@ -6,6 +6,7 @@ import ru.katella.podlodkacrewslackapp.data.repositories.Message
 import ru.katella.podlodkacrewslackapp.data.repositories.ReactionsRepository
 import ru.katella.podlodkacrewslackapp.data.repositories.User
 import ru.katella.podlodkacrewslackapp.data.repositories.UserRepository
+import ru.katella.podlodkacrewslackapp.data.slack.SessionStatsBuilder
 import ru.katella.podlodkacrewslackapp.data.slack.isUseful
 
 @Service
@@ -143,6 +144,12 @@ class ProcessingService {
         }
     }
 
+    fun processSessionsStats(teamId: String, channelId: String, userId: String) {
+        val messages = slackService.sessionsRateMessages(teamId, channelId)
+        val file = SessionStatsBuilder().build(messages)
+        slackService.uploadFile(teamId, channelId, file.content, file.name)
+    }
+
     fun processStartStopGame(teamId: String, channelId: String, userId: String, gameStarted: Boolean) {
         val user = getOrCreateUser(teamId, userId)
         if (!user.isAdmin) {
@@ -200,6 +207,4 @@ class ProcessingService {
             return idsMap
         }
     }
-
-
 }

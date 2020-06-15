@@ -80,6 +80,15 @@ class SlackService {
         }
     }
 
+    fun uploadFile(teamId: String, channelId: String, content: String, filename: String) {
+        client.filesUpload {
+            it.token(getSlackToken(teamId))
+                .channels(listOf(channelId))
+                .content(content)
+                .filename(filename)
+        }
+    }
+
     fun postLeaderBoard(teamId: String, userId: String, channel: String, leaderBoard: List<User>) {
         var table = "*Топ-15 участников конкурса:*"
         var isUserPresentedInTop = false
@@ -142,6 +151,17 @@ class SlackService {
             it.token(getSlackToken(teamId))
                 .channel(channel)
                 .text(randomText)
+        }
+    }
+
+    fun sessionsRateMessages(teamId: String, channelId: String): List<ReactionsGetResponse.Message> {
+        val searchMatches = client.searchMessages {
+            it.token(getSlackUserToken(teamId))
+                .query("\"Оцените встречу\"")
+                .count(100)
+        }.messages.matches
+        return searchMatches.map {
+            messageInfo(teamId, it.channel.id, it.timestamp)
         }
     }
 
@@ -208,6 +228,8 @@ class SlackService {
     }
 
     private fun getSlackToken(teamId: String): String = System.getenv("SLACK_BOT_TOKEN_$teamId")
+
+    private fun getSlackUserToken(teamId: String): String = System.getenv("SLACK_BOT_USER_TOKEN_$teamId")
 
     data class SlackUser(val userId: String, val userName: String, val teamId: String, val isAdmin: Boolean, val isBot: Boolean)
 

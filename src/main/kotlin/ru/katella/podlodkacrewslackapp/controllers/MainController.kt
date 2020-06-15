@@ -47,4 +47,11 @@ class MainController {
                   @RequestParam(name = "user_id") userId: String) {
         processingService.processStartStopGame(teamId, channelId, userId, false)
     }
+
+    @PostMapping("/sessions_stats")
+    fun sessionsStats(@RequestParam(name = "team_id") teamId: String,
+                 @RequestParam(name = "channel_id") channelId: String,
+                 @RequestParam(name = "user_id") userId: String) {
+        processingService.processSessionsStats(teamId, channelId, userId)
+    }
 }
