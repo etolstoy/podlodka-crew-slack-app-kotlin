@@ -43,8 +43,6 @@ class Test {
         val result = SessionStatsBuilder().build(listOf(message))
         val output = File("src/test/resources/sessionStatsTestOutput.csv").readText(Charset.defaultCharset())
 
-        print(result.content === output)
-
         Assert.assertEquals(output, result.content)
     }
 }

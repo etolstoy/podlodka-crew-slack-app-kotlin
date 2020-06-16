@@ -3,9 +3,16 @@ package ru.katella.podlodkacrewslackapp.services
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostEphemeralRequest
 import com.slack.api.methods.response.reactions.ReactionsGetResponse
+import com.slack.api.model.MatchedItem
+import jdk.nashorn.internal.objects.Global
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.channels.toList
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.repositories.User
+import javax.xml.bind.JAXBElement
 import kotlin.math.absoluteValue
 
 @Service
@@ -160,8 +167,29 @@ class SlackService {
                 .query("\"Оцените встречу\"")
                 .count(100)
         }.messages.matches
-        return searchMatches.map {
-            messageInfo(teamId, it.channel.id, it.ts)
+        try {
+
+            return runBlocking {
+                val resultChannel = Channel<ReactionsGetResponse.Message>(searchMatches.size)
+                coroutineScope {
+                    for (item in searchMatches) {
+                        launch(Dispatchers.IO) {
+                            println("Item ${item.ts} start processing")
+                            resultChannel.send(messageInfo(teamId, item.channel.id, item.ts))
+                            println("item ${item.ts} proceed")
+                        }
+                    }
+                }
+
+                println("Start closing channel")
+                resultChannel.close()
+                println("Finish closing channel")
+                val result = resultChannel.toList()
+                println("Got result as list")
+                result
+            }
+        } catch (e: Throwable) {
+            throw RuntimeException("I don't now how to use coroutines", e)
         }
     }
 

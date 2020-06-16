@@ -20,7 +20,7 @@ class SessionStatsBuilder() {
         //val reactionsCounts = rateReactions.map { Pair(it.value, message.reactionTotal(it.title)) }
         val reactionsCounts: Map<Int, Int>
         if (message.reactions == null) {
-            print("Message with null reactions $message")
+            println("Message with null reactions $message")
             reactionsCounts = mapOf(1 to 1, 2 to 2, 3 to 3, 4 to 4, 5 to 5)
         } else {
             reactionsCounts = rateReactions.associateBy( { it.value}, { message.reactionTotal(it.title) - 1 })
