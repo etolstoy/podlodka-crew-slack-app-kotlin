@@ -160,6 +160,9 @@ class SlackService {
                 .query("\"Оцените встречу\"")
                 .count(100)
         }.messages.matches
+        searchMatches.forEach {
+            println(" $it, timestamp: ${it.timestamp}")
+        }
         return searchMatches.map {
             messageInfo(teamId, it.channel.id, it.timestamp)
         }
