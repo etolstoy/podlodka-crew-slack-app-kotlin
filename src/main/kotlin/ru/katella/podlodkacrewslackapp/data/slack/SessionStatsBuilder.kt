@@ -55,14 +55,14 @@ class SessionStatsBuilder() {
         }
     )
 
-    private fun formatMessageTS(ts: String): String? {
+    private fun formatMessageTS(ts: String): String {
         return try {
             val roundDateTime = ts.substringBefore(".")
             val netDate = Date(roundDateTime.toLong() * 1000)
             val sdf = SimpleDateFormat("dd.MM.yyyy")
             sdf.format(netDate)
         } catch (e: Exception) {
-            e.toString()
+            ts
         }
     }
 
