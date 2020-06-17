@@ -42,6 +42,7 @@ class Test {
         val matchedItem = MatchedItem()
         matchedItem.text = reactionsInfo.text
         matchedItem.username = "igrekde"
+        matchedItem.ts = "1588233618.366700"
 
         val messageWithReactions = MessageWithReactions(matchedItem, reactionsInfo)
 

@@ -2,6 +2,8 @@ package ru.katella.podlodkacrewslackapp.data.slack
 
 import com.slack.api.model.MatchedItem
 import ru.katella.podlodkacrewslackapp.services.SlackService.MessageWithReactions
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SessionStatsBuilder() {
     private val colSeparator = ","
@@ -31,8 +33,12 @@ class SessionStatsBuilder() {
     class SessionMetaItem(val title: String, val predicate: (MatchedItem) -> String)
 
     private val metaItems = listOf(
+        SessionMetaItem("Дата") {
+            "\"${formatMessageTS(it.ts)}\""
+        },
         SessionMetaItem("Сессия") {
             val text = it.text
+                .substringAfter("на ")
                 .substringAfter("сессию ")
                 .substringBefore(" с ")
                 .substringBefore("\n")
@@ -48,6 +54,17 @@ class SessionStatsBuilder() {
             "\"${it.username}\""
         }
     )
+
+    private fun formatMessageTS(ts: String): String? {
+        return try {
+            val roundDateTime = ts.substringBefore(".")
+            val netDate = Date(roundDateTime.toLong() * 1000)
+            val sdf = SimpleDateFormat("dd.MM.yyyy")
+            sdf.format(netDate)
+        } catch (e: Exception) {
+            e.toString()
+        }
+    }
 
     data class StatsFile(val content: String, val name: String)
 
