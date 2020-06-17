@@ -1,37 +1,34 @@
 package ru.katella.podlodkacrewslackapp.data.slack
 
-import com.slack.api.methods.response.reactions.ReactionsGetResponse.Message as SlackMessage
+import com.slack.api.model.MatchedItem
+import ru.katella.podlodkacrewslackapp.services.SlackService.MessageWithReactions
 
 class SessionStatsBuilder() {
     private val colSeparator = ","
     private var rowSeparator = "\r\n"
 
-    fun build(sessionMessages: List<SlackMessage>): StatsFile {
+    fun build(sessionMessages: List<MessageWithReactions>): StatsFile {
         val meta = metaItems.map(SessionMetaItem::title)
         val reactions = rateReactions.map(Reaction::value)
         val total = listOf("Всего", "Рейтинг")
         val header = meta.plus(reactions).plus(total).joinToString(colSeparator)
-        val sessionRows = sessionMessages.map { buildSessionRow(it) }
+        val sessionRows = sessionMessages.mapNotNull { buildSessionRow(it) }
         return StatsFile( header + rowSeparator + sessionRows.joinToString(rowSeparator), "stats.csv")
     }
 
-    private fun buildSessionRow(message: SlackMessage): String {
-        val metaItems = metaItems.map { it.predicate(message) }
-        //val reactionsCounts = rateReactions.map { Pair(it.value, message.reactionTotal(it.title)) }
-        val reactionsCounts: Map<Int, Int>
-        if (message.reactions == null) {
-            println("Message with null reactions $message")
-            reactionsCounts = mapOf(1 to 1, 2 to 2, 3 to 3, 4 to 4, 5 to 5)
-        } else {
-            reactionsCounts = rateReactions.associateBy( { it.value}, { message.reactionTotal(it.title) - 1 })
+    private fun buildSessionRow(item: MessageWithReactions): String? {
+        val reactionsInfo = item.reactionsInfo
+        if (reactionsInfo.reactions == null) {
+            return null
         }
-
+        val metaItems = metaItems.map { it.predicate(item.matched) }
+        val reactionsCounts = rateReactions.associateBy( { it.value}, { reactionsInfo.reactionTotal(it.title) - 1 })
         val sum = reactionsCounts.values.sum()
         val total = reactionsCounts.map { it.key * it.value }.sum() / sum.toFloat()
         return metaItems.plus(reactionsCounts.values).plus(listOf(sum, total)).joinToString(colSeparator)
     }
 
-    class SessionMetaItem(val title: String, val predicate: (SlackMessage) -> String)
+    class SessionMetaItem(val title: String, val predicate: (MatchedItem) -> String)
 
     private val metaItems = listOf(
         SessionMetaItem("Сессия") {

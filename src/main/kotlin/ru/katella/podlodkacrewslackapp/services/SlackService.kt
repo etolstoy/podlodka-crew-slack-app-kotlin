@@ -161,7 +161,7 @@ class SlackService {
         }
     }
 
-    fun sessionsRateMessages(teamId: String, channelId: String): List<ReactionsGetResponse.Message> {
+    fun sessionsRateMessages(teamId: String, channelId: String): List<MessageWithReactions> {
         val searchMatches = client.searchMessages {
             it.token(getSlackUserToken(teamId))
                 .query("\"Оцените встречу\"")
@@ -170,12 +170,13 @@ class SlackService {
         try {
 
             return runBlocking {
-                val resultChannel = Channel<ReactionsGetResponse.Message>(searchMatches.size)
+                val resultChannel = Channel<MessageWithReactions>(searchMatches.size)
                 coroutineScope {
                     for (item in searchMatches) {
                         launch(Dispatchers.IO) {
                             println("Item ${item.ts} start processing")
-                            resultChannel.send(messageInfo(teamId, item.channel.id, item.ts))
+                            val reactionsInfo = messageInfo(teamId, item.channel.id, item.ts)
+                            resultChannel.send(MessageWithReactions(item, reactionsInfo))
                             println("item ${item.ts} proceed")
                         }
                     }
@@ -260,6 +261,8 @@ class SlackService {
     private fun getSlackUserToken(teamId: String): String = System.getenv("SLACK_BOT_USER_TOKEN_$teamId")
 
     data class SlackUser(val userId: String, val userName: String, val teamId: String, val isAdmin: Boolean, val isBot: Boolean)
+
+    data class MessageWithReactions(val matched: MatchedItem, val reactionsInfo: ReactionsGetResponse.Message)
 
     companion object {
         const val ROW_SEPARATOR = '\n'
