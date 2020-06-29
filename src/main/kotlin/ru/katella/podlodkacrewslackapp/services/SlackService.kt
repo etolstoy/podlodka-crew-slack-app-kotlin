@@ -164,7 +164,7 @@ class SlackService {
     fun sessionsRateMessages(teamId: String, channelId: String): List<MessageWithReactions> {
         val searchMatches = client.searchMessages {
             it.token(getSlackUserToken(teamId))
-                .query("\"Оцените встречу\"")
+                .query("in:#announcements \"поставив нужную реакцию\"")
                 .count(100)
         }.messages.matches
         try {
@@ -174,19 +174,13 @@ class SlackService {
                 coroutineScope {
                     for (item in searchMatches) {
                         launch(Dispatchers.IO) {
-                            println("Item ${item.ts} start processing")
                             val reactionsInfo = messageInfo(teamId, item.channel.id, item.ts)
                             resultChannel.send(MessageWithReactions(item, reactionsInfo))
-                            println("item ${item.ts} proceed")
                         }
                     }
                 }
-
-                println("Start closing channel")
                 resultChannel.close()
-                println("Finish closing channel")
                 val result = resultChannel.toList()
-                println("Got result as list")
                 result
             }
         } catch (e: Throwable) {
