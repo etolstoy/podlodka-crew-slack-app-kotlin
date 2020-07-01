@@ -1,17 +1,19 @@
 logging.level:
   com.slack.api: ERROR
 server:
-  port: 3001
+  port: 3000
 spring:
   jpa:
-    database: H2
+    database: POSTGRESQL
     show-sql: true
-    properties.hibernate.dialect: org.hibernate.dialect.H2Dialect
+    properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
   mail:
     host: smtp.gmail.com
     port: 587
+    username: ${email_login}
+    password: ${email_password}
     properties:
       mail:
         smtp:
