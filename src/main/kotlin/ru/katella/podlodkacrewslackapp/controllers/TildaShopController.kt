@@ -1,11 +1,6 @@
 package ru.katella.podlodkacrewslackapp.controllers
 
-import kotlinx.html.*
-import kotlinx.html.stream.createHTML
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
-import org.springframework.ui.ModelMap
-import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import ru.katella.podlodkacrewslackapp.data.repositories.Playlist
 import ru.katella.podlodkacrewslackapp.data.repositories.PlaylistRepository
