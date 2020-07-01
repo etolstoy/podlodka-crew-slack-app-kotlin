@@ -34,10 +34,12 @@ class TildaShopController {
         val result = keys.filter { regex.matches(it) }.map {
             formParams[it].toString()
         }.map {
-            it + ". Ссылка: " + links[it]
+            it + ". Ссылка: " + links[it] + "\n"
         }.joinToString { it }
 
-        emailService.sendEmail(email, "Плейлисты Podlodka Crew", result)
+        val messageText = "Привет!\n\nСпасибо за заказ!\n" + result
+
+        emailService.sendEmail(email, "Ссылки на плейлисты Podlodka Crew", messageText)
 
         return result
     }
