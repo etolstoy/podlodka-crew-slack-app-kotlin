@@ -7,7 +7,9 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 @Repository
-interface PlaylistRepository: JpaRepository<Playlist, String>
+interface PlaylistRepository: JpaRepository<Playlist, String> {
+    fun findByName(name: String): List<Playlist>
+}
 
 @Entity
 @Table(name = "playlist")

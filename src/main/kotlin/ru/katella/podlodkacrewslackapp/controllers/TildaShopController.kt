@@ -28,7 +28,7 @@ class TildaShopController {
         val result = keys.filter { regex.matches(it) }.map {
             formParams[it].toString()
         }.map {
-            val playlist = getPlaylistByName(it)
+            val playlist = playlistRepository.findByName(it).first()
             it + ". Ссылка: " + playlist.url + "\n"
         }.joinToString("") { it }
 
@@ -37,14 +37,5 @@ class TildaShopController {
         emailService.sendEmail(email, "Ссылки на плейлисты Podlodka Crew", messageText)
 
         return result
-    }
-
-    fun getPlaylistByName(name: String): Playlist {
-        playlistRepository.findAll().forEach {
-            if (it.name == name) {
-                return it
-            }
-        }
-        return Playlist("", "")
     }
 }
