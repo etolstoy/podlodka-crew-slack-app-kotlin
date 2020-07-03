@@ -19,10 +19,13 @@ class TildaShopController {
 
     @PostMapping
     @ResponseBody
-    fun handlePlaylistBuyEvent(@RequestParam formParams: Map<String, Any>,
-                               @RequestParam(name = "Name") name: String,
-                               @RequestParam(name = "Email") email: String
-    ): String {
+    fun handlePlaylistBuyEvent(@RequestParam formParams: Map<String, Any>?,
+                               @RequestParam(name = "Name") name: String?,
+                               @RequestParam(name = "Email") email: String?
+    ) {
+        if (formParams == null || name == null || email == null) {
+            return
+        }
         val keys: Set<String> = formParams.keys
         val regex = """payment\[products\]\[[0-9]\]\[name\]""".toRegex()
         val result = keys.filter { regex.matches(it) }.map {
@@ -35,7 +38,5 @@ class TildaShopController {
         val messageText = "Привет, Спасибо за заказ!\n\n" + result
 
         emailService.sendEmail(email, "Ссылки на плейлисты Podlodka Crew", messageText)
-
-        return result
     }
 }
