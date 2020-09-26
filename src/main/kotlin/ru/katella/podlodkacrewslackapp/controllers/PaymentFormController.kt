@@ -79,7 +79,6 @@ class PaymentFormController {
             json = payload,
             headers = headers
         )
-        println(r.jsonObject.toString())
 
         return r
     }
