@@ -5,6 +5,7 @@ import com.beust.klaxon.Klaxon
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import khttp.post
+import ru.katella.podlodkacrewslackapp.data.ShopConfig
 import java.io.StringReader
 import java.util.Base64
 
@@ -18,12 +19,9 @@ class PaymentFormController {
     )
 
     @PostMapping
-    fun createOrder(@RequestParam(name = "event_id") eventId: String): Map<String, String> {
-        val kassaUrl = "https://payment.yandex.net/api/v3/payments"
-        val shopId = "11"
-        val secretKey = "test_"
-        val authString: String = Base64.getEncoder().encodeToString("$shopId:$secretKey".toByteArray())
-
+    fun createOrder(@RequestParam(name = "product_id") productId: String): Map<String, String> {
+        val shopConfig = ShopConfig()
+        val authString: String = Base64.getEncoder().encodeToString("${shopConfig.yandexShopId}:${shopConfig.yandexSecretKey}".toByteArray())
         val payload = mapOf(
                 "amount" to mapOf(
                         "value" to "3900",
@@ -41,7 +39,7 @@ class PaymentFormController {
                 "Idempotence-Key" to java.util.UUID.randomUUID().toString()
         )
         val r = post(
-                kassaUrl,
+                shopConfig.kassaUrl,
                 json = payload,
                 headers = headers
         )
@@ -51,6 +49,31 @@ class PaymentFormController {
             val result = mapOf(
                     "confirmation_url" to url
             )
+            // Сохраняем в промежуточный кеш AirTable инфу о платеже
+            val airtableHeaders = mapOf(
+                "Content-Type" to "application/json",
+                "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
+            )
+            val airtablePayload = mapOf(
+                "records" to arrayOf(
+                    mapOf(
+                        "fields" to mapOf<String, String>(
+                            "ProductId" to productId,
+                            "OrderId" to "123",
+                            "Amount" to "2000"
+                        )
+                    )
+                )
+            )
+
+            val r = post(
+                shopConfig.airtableUrl,
+                json = airtablePayload,
+                headers = airtableHeaders
+            )
+            println(r.jsonObject.toString())
+
+            // Отправляем на фронт урл странички оплаты
             return result
         }
 
