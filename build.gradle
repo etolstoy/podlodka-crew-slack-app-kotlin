@@ -37,7 +37,7 @@ dependencies {
     implementation("com.slack.api:slack-api-client:1.0.5")
 
     implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.3.71"
-    runtime 'org.postgresql:postgresql'
+    runtime 'com.h2database:h2'
 
     testImplementation 'junit:junit:4.13'
 }
