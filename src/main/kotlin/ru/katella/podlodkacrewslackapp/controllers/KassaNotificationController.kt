@@ -7,13 +7,12 @@ import org.json.JSONObject
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
+import ru.katella.podlodkacrewslackapp.utils.KlaxonAmount
+import ru.katella.podlodkacrewslackapp.utils.amountConverter
 
 @RestController
 @RequestMapping("/notification")
 class KassaNotificationController {
-    @Target(AnnotationTarget.FIELD)
-    annotation class KlaxonAmount
-
     data class KassaNotificationDetails(
         val id: String,
         val paid: Boolean,
@@ -30,21 +29,6 @@ class KassaNotificationController {
         @Json(name = "object")
         val details: KassaNotificationDetails
     )
-
-    val amountConverter = object: Converter {
-        override fun canConvert(cls: Class<*>)
-                = cls == Map::class.java
-
-        override fun fromJson(jv: JsonValue) =
-            if (jv.obj != null) {
-                println(jv)
-                jv.obj?.get("value")
-            } else {
-                throw KlaxonException("Couldn't parse amount: ${jv.string}")
-            }
-
-        override fun toJson(value: Any): String = ""
-    }
 
     @PostMapping
     @ResponseBody
