@@ -86,59 +86,18 @@ class PriceService {
         val result = mapper.readValue<AirTableOfferResponse>(jsonString)
         val offers = result.records.map { it.offer }
 
-        var allOffersPrice = offers.fold(0.0) { sum, offer ->
-            sum + offer.price.toDouble()
-        }
+        val promoObject = getPromo(promo)
 
-        // Проверяем промокод. Ищем его в таблице, затем проверяем на is_active.
-        // Затем идем по всем событиям и проверяем, что у оффера есть промокод с таким айди
-        if (promo != null) {
-            val promo = getPromo(promo)
-            if (promo == null) {
-                println("Промокод не найден")
-                return allOffersPrice
-            }
-            if (promo.isActive == false) {
-                println("Промокод не активен")
-                return allOffersPrice
-            }
-
-            var priceWithPromo = 0.0
-            var availablePromoUses = 1
-            offers.forEach {
-                // Этот промокод подходит к этому офферу, значит надо чекнуть его тип и поменять цену
-                if (it.activePromoIds?.contains(promo.id) == true && availablePromoUses > 0) {
-                    // Если это промокод с фикспрайсом, то просто плюсуем его стоимость к сумме
-                    if (promo.priceType == PromoPriceType.FIXED.typeName) {
-                        priceWithPromo += promo.price.toDouble()
-                    }
-
-                    // Если тип – Decrease, то уменьшаем стоимость предмета на эту сумму, но чекаем на то, что не меньше нуля
-                    if (promo.priceType == PromoPriceType.DECREASE.typeName) {
-                        var resultPrice = it.price.toDouble() - promo.price.toDouble()
-                        println(resultPrice)
-                        if (resultPrice < 0) {
-                            resultPrice = 0.0
-                        }
-                        priceWithPromo += resultPrice
-                    }
-
-                    // Уменьшаем количество использований промокода
-                    if (promo.type != PromoType.UNLIMITED.typeName) {
-                        availablePromoUses -= 1
-                    }
-                } else {
-                    priceWithPromo += it.price.toDouble()
-                }
-            }
-
-            allOffersPrice = priceWithPromo
-        }
-
-        return allOffersPrice
+        val priceCalculator = PromoCalculatorService()
+        val price = priceCalculator.countPrice(offers, promoObject)
+        return price
     }
 
-    private fun getPromo(id: String): Promo? {
+    private fun getPromo(id: String?): Promo? {
+        if (id == null) {
+            return null
+        }
+
         val shopConfig = ShopConfig()
         val headers = defaultAirTableHeaders()
 
