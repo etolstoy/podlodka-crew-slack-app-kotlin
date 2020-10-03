@@ -15,7 +15,7 @@ class ProductController {
     lateinit var productService: ProductService
 
     @GetMapping
-    fun getProductList(type: String): List<Product> {
+    fun getProductList(type: String): List<Product>? {
         return productService.obtainProducts(enumValueOf<ProductType>(type.toUpperCase()))
     }
 }

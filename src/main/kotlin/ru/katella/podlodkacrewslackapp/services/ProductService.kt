@@ -12,6 +12,7 @@ import com.google.gson.reflect.TypeToken
 import khttp.get
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
+import ru.katella.podlodkacrewslackapp.utils.defaultAirTableHeaders
 
 @Service
 class ProductService {
@@ -23,6 +24,7 @@ class ProductService {
     data class AirTableResponse(
             val records: List<Record>
     )
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Record(
             val id: String,
@@ -48,11 +50,7 @@ class ProductService {
 
     fun obtainProducts(type: ProductType): List<Product> {
         val shopConfig = ShopConfig()
-        val headers = mapOf(
-                "Content-Type" to "application/json",
-                "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
-        )
-        println(headers)
+        val headers = defaultAirTableHeaders()
 
         val payload = mapOf(
                 "filterByFormula" to "{product_type} = '${type.name.toLowerCase().capitalize()}'"
