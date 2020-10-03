@@ -10,6 +10,8 @@ import khttp.responses.Response
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
 import ru.katella.podlodkacrewslackapp.data.repositories.Order
 import ru.katella.podlodkacrewslackapp.data.repositories.OrderRepository
+import ru.katella.podlodkacrewslackapp.data.repositories.Playlist
+import ru.katella.podlodkacrewslackapp.services.ProductService
 import java.util.Base64
 import ru.katella.podlodkacrewslackapp.utils.KlaxonAmount
 import ru.katella.podlodkacrewslackapp.utils.KlaxonConfirmation
@@ -23,6 +25,9 @@ class PaymentFormController {
 
     @Autowired
     lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    lateinit var productService: ProductService
 
     data class Confirmation(
             val id: String,
@@ -55,6 +60,8 @@ class PaymentFormController {
     fun createOrder(@RequestBody payload: Map<Any, Any?>): Map<String, String?> {
         // Совершаем платеж в API Кассы
         val r = makeRequestToKassa()
+
+        productService.obtainProducts(type = ProductService.ProductType.PLAYLIST)
 
         // Для успешного запроса – отдаем во фронт формочку оплаты и сохраняем статус заказа в кеш
         if (r.statusCode == 200) {
