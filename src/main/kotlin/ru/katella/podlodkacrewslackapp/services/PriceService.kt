@@ -5,13 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import khttp.get
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.data.ShopConfig
-import ru.katella.podlodkacrewslackapp.utils.defaultAirTableHeaders
 
 @Service
 class PriceService {
+    @Autowired
+    lateinit var airTableService: AirTableService
+
     enum class PromoPriceType(val typeName: String) {
         DECREASE("price_decrease"),
         FIXED(typeName = "fixed_price")
@@ -66,22 +67,13 @@ class PriceService {
     // Здесь мы рассчитываем цену, которую должен заплатить покупатель с учетом своих промокодов
     // Для этого мы должны получить список офферов, каждый запроцессить с промокодом, потом посчитать сумму
     fun getPrice(offerIds: List<String>, promo: String?): Number {
-        val shopConfig = ShopConfig()
-        val headers = defaultAirTableHeaders()
-
         val offerIdString = "OR(" +
                 offerIds.joinToString(separator = ", ") { "{id} = '$it'" } +
                 ")"
         val payload = mapOf(
                 "filterByFormula" to offerIdString
         )
-
-        val r = get(
-                shopConfig.airtableUrl + "Offers",
-                params = payload,
-                headers = headers
-        )
-        val jsonString = r.jsonObject.toString()
+        val jsonString = airTableService.getRecords("Offers", payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTableOfferResponse>(jsonString)
         val offers = result.records.map { it.offer }
@@ -97,20 +89,10 @@ class PriceService {
         if (id == null) {
             return null
         }
-
-        val shopConfig = ShopConfig()
-        val headers = defaultAirTableHeaders()
-
         val payload = mapOf(
                 "filterByFormula" to "{id} = '$id'"
         )
-
-        val r = get(
-                shopConfig.airtableUrl + "Promocodes",
-                params = payload,
-                headers = headers
-        )
-        val jsonString = r.jsonObject.toString()
+        val jsonString = airTableService.getRecords("Promocodes", payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTablePromoResponse>(jsonString)
         return result.records.firstOrNull()?.promo

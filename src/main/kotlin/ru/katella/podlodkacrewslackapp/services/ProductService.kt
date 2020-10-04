@@ -10,12 +10,14 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import khttp.get
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.katella.podlodkacrewslackapp.data.ShopConfig
-import ru.katella.podlodkacrewslackapp.utils.defaultAirTableHeaders
 
 @Service
 class ProductService {
+    @Autowired
+    lateinit var airTableService: AirTableService
+
     enum class ProductType() {
         EVENT,
         PLAYLIST
@@ -49,19 +51,10 @@ class ProductService {
     )
 
     fun obtainProducts(type: ProductType): List<Product> {
-        val shopConfig = ShopConfig()
-        val headers = defaultAirTableHeaders()
-
         val payload = mapOf(
                 "filterByFormula" to "{product_type} = '${type.name.toLowerCase().capitalize()}'"
         )
-
-        val r = get(
-                shopConfig.airtableUrl + "Products",
-                params = payload,
-                headers = headers
-        )
-        val jsonString = r.jsonObject.toString()
+        val jsonString = airTableService.getRecords("Products", payload)
 
         val mapper = ObjectMapper().registerKotlinModule()
 
