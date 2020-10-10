@@ -92,6 +92,11 @@ class PriceService {
         return price
     }
 
+    fun validatePromo(id: String): Boolean {
+        val promo = getPromo(id)
+        return promo != null && promo.isActive == true
+    }
+
     private fun getPromo(id: String?): Promo? {
         if (id == null) {
             return null

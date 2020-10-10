@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
 import ru.katella.podlodkacrewslackapp.utils.AirTableEndpoint
+import ru.katella.podlodkacrewslackapp.utils.AirTableOffer
 import ru.katella.podlodkacrewslackapp.utils.AirTableProduct
 
 @Service
@@ -52,12 +53,27 @@ class ProductService {
         val payload = mapOf(
                 AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase().capitalize()}'"
         )
-        println(payload)
         val jsonString = airTableService.getRecords(AirTableEndpoint.PRODUCT, payload)
 
         val mapper = ObjectMapper().registerKotlinModule()
 
         val result = mapper.readValue<AirTableResponse>(jsonString)
         return result.records.map { it.product }
+    }
+
+    fun validateOffers(offerIds: List<String>): Boolean {
+        // Валидация простая – запрашиваем у AirTable офферы по их Id. Количество вернувшихся офферов должно быть равно количеству Id
+        val offerIdString = "OR(" +
+                offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
+                ")"
+        val payload = mapOf(
+                AirTableCommon.FILTER_KEYWORD to offerIdString
+        )
+        val jsonString = airTableService.getRecords(AirTableEndpoint.OFFER, payload)
+        val mapper = ObjectMapper().registerKotlinModule()
+        val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
+        val resultCount = result.records.count()
+
+        return resultCount == offerIds.count()
     }
 }
