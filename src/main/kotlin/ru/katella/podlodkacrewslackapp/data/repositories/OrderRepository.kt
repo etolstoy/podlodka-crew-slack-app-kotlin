@@ -13,13 +13,12 @@ interface OrderRepository: JpaRepository<Order, String> {
 }
 
 @Entity
-@Table(name = "product_order")
+@Table(name = "offer_order")
 data class Order(
         @Id val orderId: String,
         var customerEmail: String,
         var firstName: String,
         var lastName: String,
         var email: String,
-        var productId: String,
-        var amount: String
+        var offerId: String
 )
