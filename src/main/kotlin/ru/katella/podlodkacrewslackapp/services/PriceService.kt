@@ -7,6 +7,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
+import ru.katella.podlodkacrewslackapp.utils.AirTableEndpoint
+import ru.katella.podlodkacrewslackapp.utils.AirTableOffer
+import ru.katella.podlodkacrewslackapp.utils.AirTablePromo
 
 @Service
 class PriceService {
@@ -14,13 +18,13 @@ class PriceService {
     lateinit var airTableService: AirTableService
 
     enum class PromoPriceType(val typeName: String) {
-        DECREASE("price_decrease"),
-        FIXED(typeName = "fixed_price")
+        DECREASE(AirTablePromo.PRICE_TYPE_DECREASE),
+        FIXED(typeName = AirTablePromo.PRICE_TYPE_FIXED)
     }
 
     enum class PromoType(val typeName: String) {
-        SINGLE("single"),
-        UNLIMITED("unlimited")
+        SINGLE(AirTablePromo.PROMO_TYPE_SINGLE),
+        UNLIMITED(AirTablePromo.PROMO_TYPE_UNLIMITED)
     }
 
     data class AirTablePromoResponse(
@@ -30,7 +34,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PromoRecord(
             val id: String,
-            @JsonAlias("fields")
+            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
             val promo: Promo
     )
 
@@ -38,10 +42,10 @@ class PriceService {
     data class Promo(
             val id: String,
             val price: Number,
-            @JsonAlias("price_type")
+            @JsonAlias(AirTablePromo.PRICE_TYPE)
             val priceType: String,
             val type: String,
-            @JsonAlias("is_active")
+            @JsonAlias(AirTablePromo.IS_ACTIVE)
             val isActive: Boolean
     )
 
@@ -52,7 +56,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class OfferRecord(
             val id: String,
-            @JsonAlias("fields")
+            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
             val offer: Offer
     )
 
@@ -60,7 +64,7 @@ class PriceService {
     data class Offer(
             val id: String,
             val price: Number,
-            @JsonAlias("active_promo_ids")
+            @JsonAlias(AirTableOffer.ACTIVE_PROMO)
             val activePromoIds: List<String>?
     )
 
@@ -68,12 +72,13 @@ class PriceService {
     // Для этого мы должны получить список офферов, каждый запроцессить с промокодом, потом посчитать сумму
     fun getPrice(offerIds: List<String>, promo: String?): Number {
         val offerIdString = "OR(" +
-                offerIds.joinToString(separator = ", ") { "{id} = '$it'" } +
+                offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
                 ")"
         val payload = mapOf(
-                "filterByFormula" to offerIdString
+                AirTableCommon.FILTER_KEYWORD to offerIdString
         )
-        val jsonString = airTableService.getRecords("Offers", payload)
+
+        val jsonString = airTableService.getRecords(AirTableEndpoint.OFFER, payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTableOfferResponse>(jsonString)
         val offers = result.records.map { it.offer }
@@ -90,9 +95,9 @@ class PriceService {
             return null
         }
         val payload = mapOf(
-                "filterByFormula" to "{id} = '$id'"
+                AirTableCommon.FILTER_KEYWORD to "{${AirTablePromo.ID}} = '$id'"
         )
-        val jsonString = airTableService.getRecords("Promocodes", payload)
+        val jsonString = airTableService.getRecords(AirTableEndpoint.PROMO, payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTablePromoResponse>(jsonString)
         return result.records.firstOrNull()?.promo

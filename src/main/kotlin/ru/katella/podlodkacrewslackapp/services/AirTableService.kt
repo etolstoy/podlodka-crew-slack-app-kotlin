@@ -2,9 +2,14 @@ package ru.katella.podlodkacrewslackapp.services
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import khttp.get
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
+import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
 
 @Service
 class AirTableService {
@@ -15,7 +20,7 @@ class AirTableService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Record<T>(
             val id: String,
-            @JsonAlias("fields")
+            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
             val payload: T
     )
 

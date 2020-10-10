@@ -1,17 +1,15 @@
 package ru.katella.podlodkacrewslackapp.services
 
-import com.beust.klaxon.*
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonRootName
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import khttp.get
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
+import ru.katella.podlodkacrewslackapp.utils.AirTableEndpoint
+import ru.katella.podlodkacrewslackapp.utils.AirTableProduct
 
 @Service
 class ProductService {
@@ -30,31 +28,32 @@ class ProductService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Record(
             val id: String,
-            @JsonAlias("fields")
+            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
             val product: Product
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Product(
-            @JsonAlias("id")
+            @JsonAlias(AirTableProduct.ID)
             val productId: String,
-            @JsonAlias("Name")
+            @JsonAlias(AirTableProduct.NAME)
             val name: String?,
-            @JsonAlias("product_type")
+            @JsonAlias(AirTableProduct.TYPE)
             val type: String,
-            @JsonAlias("link_to_product")
+            @JsonAlias(AirTableProduct.LINK)
             val link: String?,
-            @JsonAlias("active_offers")
+            @JsonAlias(AirTableProduct.ACTIVE_OFFERS)
             val offerIds: List<String>,
-            @JsonAlias("offer_price")
+            @JsonAlias(AirTableProduct.OFFER_PRICE)
             val offerPrices: List<Number>
     )
 
     fun obtainProducts(type: ProductType): List<Product> {
         val payload = mapOf(
-                "filterByFormula" to "{product_type} = '${type.name.toLowerCase().capitalize()}'"
+                AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase().capitalize()}'"
         )
-        val jsonString = airTableService.getRecords("Products", payload)
+        println(payload)
+        val jsonString = airTableService.getRecords(AirTableEndpoint.PRODUCT, payload)
 
         val mapper = ObjectMapper().registerKotlinModule()
 
