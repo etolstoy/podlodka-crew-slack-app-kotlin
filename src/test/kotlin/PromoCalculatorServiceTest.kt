@@ -36,7 +36,8 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
         ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
     @Test
@@ -59,7 +60,8 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
         ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
     @Test
@@ -82,7 +84,8 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
     @Test
@@ -104,7 +107,8 @@ class PromoCalculatorServiceTest {
                     type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                     isActive = true
         ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
     @Test
@@ -126,7 +130,8 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
     @Test
@@ -149,7 +154,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -172,7 +177,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -195,7 +200,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -216,7 +221,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = true
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -237,7 +242,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = true
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -257,7 +262,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = false
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     @Test
@@ -277,7 +282,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = false
                 ))
-        Assert.assertTrue(result == expectedResult)
+        Assert.assertTrue(result.price == expectedResult)
     }
 
     private fun generateOffers(count: Int, promoId: String, price: Number): List<PriceService.Offer> {

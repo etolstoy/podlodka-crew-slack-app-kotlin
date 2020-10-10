@@ -53,7 +53,7 @@ class ProductService {
         val payload = mapOf(
                 AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase().capitalize()}'"
         )
-        val jsonString = airTableService.getRecords(AirTableEndpoint.PRODUCT, payload)
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PRODUCT, payload)
 
         val mapper = ObjectMapper().registerKotlinModule()
 
@@ -69,7 +69,7 @@ class ProductService {
         val payload = mapOf(
                 AirTableCommon.FILTER_KEYWORD to offerIdString
         )
-        val jsonString = airTableService.getRecords(AirTableEndpoint.OFFER, payload)
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
         val resultCount = result.records.count()

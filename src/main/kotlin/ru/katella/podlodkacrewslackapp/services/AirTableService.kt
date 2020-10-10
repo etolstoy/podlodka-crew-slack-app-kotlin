@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import khttp.get
+import khttp.patch
+import org.json.JSONObject
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
 import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
@@ -24,7 +26,7 @@ class AirTableService {
             val payload: T
     )
 
-    fun getRecords(urlPath: String, payload: Map<String, String>): String {
+    fun makeGetRequest(urlPath: String, payload: Map<String, String>): String {
         val shopConfig = ShopConfig()
         val headers = mapOf(
                 "Content-Type" to "application/json",
@@ -33,6 +35,21 @@ class AirTableService {
         val r = get(
                 shopConfig.airtableUrl + urlPath,
                 params = payload,
+                headers = headers
+        )
+        val jsonString = r.jsonObject.toString()
+        return jsonString
+    }
+
+    fun makePatchRequest(urlPath: String, payload: Map<String, Any>): String {
+        val shopConfig = ShopConfig()
+        val headers = mapOf(
+                "Content-Type" to "application/json",
+                "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
+        )
+        val r = patch(
+                shopConfig.airtableUrl + urlPath,
+                data = JSONObject(payload),
                 headers = headers
         )
         val jsonString = r.jsonObject.toString()

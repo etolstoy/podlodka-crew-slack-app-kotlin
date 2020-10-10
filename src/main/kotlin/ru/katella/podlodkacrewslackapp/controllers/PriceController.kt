@@ -16,7 +16,7 @@ class PriceController {
 
     @GetMapping
     fun countPrice(@RequestParam offers: List<String>, promo: String?): Number {
-        return priceService.getPrice(offers, promo)
+        return priceService.getPrice(offers, promo).price
     }
 
 }

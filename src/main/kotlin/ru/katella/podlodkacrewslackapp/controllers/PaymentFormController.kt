@@ -16,6 +16,7 @@ import ru.katella.podlodkacrewslackapp.data.repositories.Order
 import ru.katella.podlodkacrewslackapp.data.repositories.OrderRepository
 import ru.katella.podlodkacrewslackapp.services.PriceService
 import ru.katella.podlodkacrewslackapp.services.ProductService
+import ru.katella.podlodkacrewslackapp.services.YandexKassaService
 import ru.katella.podlodkacrewslackapp.utils.*
 import java.util.Base64
 
@@ -30,6 +31,9 @@ class PaymentFormController {
 
     @Autowired
     lateinit var priceService: PriceService
+
+    @Autowired
+    lateinit var kassaService: YandexKassaService
 
     data class Confirmation(
             val id: String,
@@ -80,13 +84,26 @@ class PaymentFormController {
         }
 
         // Считаем стоимость покупки с учетом списка офферов и промокода
-
+        val orderPrice = priceService.getPrice(offerIds, orderBag.promo)
+        if (orderPrice.price == 0) {
+            // TODO: Тут надо сразу переходить к оформлению успешного заказа
+        }
 
         // Совершаем запрос в API Кассы, если валидация успешна
+        val confirmation = kassaService.requestPaymentConfirmation(orderPrice.price)
+        if (confirmation == null) {
+            return mapOf(
+                    "Error" to "Yandex Kassa didn't approve payment"
+            )
+        }
 
-        // Если Касса ответила успехом, то обновляем usageCount промокода
+        // Обновляем usageCount промокода
+        priceService.updatePromoUsage(orderBag.promo, orderPrice.promoUsageLeft)
 
-        // Если Касса ответила успехом, то возвращаем фронту ссылку на форму оплаты, а статус заказа сохраняем в кэше
+        // Сохраняем статус заказа в локальный кеш
+
+
+        // Возвращаем фронту ссылку на форму оплаты, а статус заказа сохраняем в кэше
 
 
         return mapOf()
@@ -138,58 +155,4 @@ class PaymentFormController {
             }
         }
     }
-
-    private fun makeRequestToKassa(): Response {
-        val shopConfig = ShopConfig()
-        val authString: String = Base64.getEncoder().encodeToString("${shopConfig.yandexShopId}:${shopConfig.yandexSecretKey}".toByteArray())
-        val payload = mapOf(
-            "amount" to mapOf(
-                "value" to "3900",
-                "currency" to "RUB"
-            ),
-            "capture" to true,
-            "confirmation" to mapOf(
-                "type" to "redirect",
-                "return_url" to "https://podlodka.io/crew"
-            )
-        )
-        val headers = mapOf(
-            "Content-Type" to "application/json",
-            "Authorization" to "Basic $authString",
-            "Idempotence-Key" to java.util.UUID.randomUUID().toString()
-        )
-        val r = post(
-            shopConfig.kassaUrl,
-            json = payload,
-            headers = headers
-        )
-
-        return r
-    }
-
-//    private fun cacheOrderToAirtable(orderBag: OrderBag, confirmation: Confirmation?) {
-//        val shopConfig = ShopConfig()
-//
-//        val airtableHeaders = mapOf(
-//            "Content-Type" to "application/json",
-//            "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
-//        )
-//        val airtablePayload = mapOf(
-//            "records" to arrayOf(
-//                mapOf(
-//                    "fields" to mapOf<String, String?>(
-//                        "ProductId" to productId,
-//                        "OrderId" to confirmation?.id,
-//                        "Amount" to confirmation?.amount
-//                    )
-//                )
-//            )
-//        )
-//
-//        val r = post(
-//            shopConfig.airtableUrl,
-//            json = airtablePayload,
-//            headers = airtableHeaders
-//        )
-//    }
 }

@@ -1,24 +1,31 @@
 package ru.katella.podlodkacrewslackapp.services
 
+import org.hibernate.criterion.Order
 import ru.katella.podlodkacrewslackapp.services.PriceService.Offer
 import ru.katella.podlodkacrewslackapp.services.PriceService.Promo
 
 class PromoCalculatorService {
-    fun countPrice(offers: List<Offer>, promo: Promo?): Number {
+    data class OrderPrice(
+            val price: Number,
+            val promoUsageLeft: Int
+    )
+
+    fun countPrice(offers: List<Offer>, promo: Promo?): OrderPrice {
         var allOffersPrice = offers.fold(0.0) { sum, offer ->
             sum + offer.price.toDouble()
         }
+        var availablePromoUses = 0
 
         // Проверяем промокод. Ищем его в таблице, затем проверяем на is_active.
         // Затем идем по всем событиям и проверяем, что у оффера есть промокод с таким айди
         if (promo != null) {
             if (promo.isActive == false) {
                 println("Промокод не активен")
-                return allOffersPrice
+                return OrderPrice(price = allOffersPrice, promoUsageLeft = availablePromoUses)
             }
 
             var priceWithPromo = 0.0
-            var availablePromoUses = promo.usageLeft
+            availablePromoUses = promo.usageLeft
             offers.forEach {
                 // Этот промокод подходит к этому офферу, значит надо чекнуть его тип и поменять цену
                 if (it.activePromoIds?.contains(promo.id) == true && (availablePromoUses > 0 || promo.type == PriceService.PromoType.UNLIMITED.typeName)) {
@@ -49,6 +56,9 @@ class PromoCalculatorService {
             allOffersPrice = priceWithPromo
         }
 
-        return allOffersPrice
+        return OrderPrice(
+                price = allOffersPrice,
+                promoUsageLeft = availablePromoUses
+        )
     }
 }

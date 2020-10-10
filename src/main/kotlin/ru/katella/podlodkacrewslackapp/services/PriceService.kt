@@ -72,7 +72,7 @@ class PriceService {
 
     // Здесь мы рассчитываем цену, которую должен заплатить покупатель с учетом своих промокодов
     // Для этого мы должны получить список офферов, каждый запроцессить с промокодом, потом посчитать сумму
-    fun getPrice(offerIds: List<String>, promo: String?): Number {
+    fun getPrice(offerIds: List<String>, promo: String?): PromoCalculatorService.OrderPrice {
         val offerIdString = "OR(" +
                 offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
                 ")"
@@ -80,7 +80,7 @@ class PriceService {
                 AirTableCommon.FILTER_KEYWORD to offerIdString
         )
 
-        val jsonString = airTableService.getRecords(AirTableEndpoint.OFFER, payload)
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTableOfferResponse>(jsonString)
         val offers = result.records.map { it.offer }
@@ -97,16 +97,39 @@ class PriceService {
         return promo != null && promo.isActive == true
     }
 
+    fun updatePromoUsage(promo: String?, usageLeft: Int) {
+        val record = getPromoRecord(promo)
+        if (record != null) {
+            val payload = mapOf(
+                    "records" to listOf<Map<String, Any>>(
+                            mapOf(
+                                    "id" to record.id,
+                                    "fields" to mapOf<String, Int>(
+                                            "usage_left" to usageLeft
+                                    )
+                            )
+                    )
+            )
+
+            airTableService.makePatchRequest(AirTableEndpoint.PROMO, payload)
+        }
+    }
+
     private fun getPromo(id: String?): Promo? {
+        val record = getPromoRecord(id)
+        return record?.promo
+    }
+
+    private fun getPromoRecord(id: String?): PromoRecord? {
         if (id == null) {
             return null
         }
         val payload = mapOf(
                 AirTableCommon.FILTER_KEYWORD to "{${AirTablePromo.ID}} = '$id'"
         )
-        val jsonString = airTableService.getRecords(AirTableEndpoint.PROMO, payload)
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PROMO, payload)
         val mapper = ObjectMapper().registerKotlinModule()
         val result = mapper.readValue<AirTablePromoResponse>(jsonString)
-        return result.records.firstOrNull()?.promo
+        return result.records.firstOrNull()
     }
 }
