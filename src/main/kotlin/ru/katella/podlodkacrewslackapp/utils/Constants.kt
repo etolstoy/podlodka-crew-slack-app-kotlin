@@ -33,9 +33,10 @@ class AirTablePromo {
         const val ID = "id"
         const val PRICE_TYPE = "price_type"
         const val IS_ACTIVE = "is_active"
+        const val USAGE_LEFT = "usage_left"
         const val PRICE_TYPE_DECREASE = "price_decrease"
         const val PRICE_TYPE_FIXED = "fixed_price"
-        const val PROMO_TYPE_SINGLE = "single"
+        const val PROMO_TYPE_LIMITED = "limited"
         const val PROMO_TYPE_UNLIMITED = "unlimited"
     }
 }

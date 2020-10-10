@@ -18,10 +18,10 @@ class PromoCalculatorService {
             }
 
             var priceWithPromo = 0.0
-            var availablePromoUses = 1
+            var availablePromoUses = promo.usageLeft
             offers.forEach {
                 // Этот промокод подходит к этому офферу, значит надо чекнуть его тип и поменять цену
-                if (it.activePromoIds?.contains(promo.id) == true && availablePromoUses > 0) {
+                if (it.activePromoIds?.contains(promo.id) == true && (availablePromoUses > 0 || promo.type == PriceService.PromoType.UNLIMITED.typeName)) {
                     // Если это промокод с фикспрайсом, то просто плюсуем его стоимость к сумме
                     if (promo.priceType == PriceService.PromoPriceType.FIXED.typeName) {
                         priceWithPromo += promo.price.toDouble()

@@ -22,17 +22,19 @@ class PromoCalculatorServiceTest {
         val promoId = "promo_1"
         val offerPrice = 1000.0
         val promoPrice = 100.0
+        val usageLeft = 1
 
         val expectedResult = promoPrice
 
         val result = calculator.countPrice(
                 generateOffers(1, promoId, offerPrice),
                 PriceService.Promo(
-                    id = promoId,
-                    price = promoPrice,
-                    type = AirTablePromo.PROMO_TYPE_SINGLE,
-                    priceType = AirTablePromo.PRICE_TYPE_FIXED,
-                    isActive = true
+                        id = promoId,
+                        price = promoPrice,
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        priceType = AirTablePromo.PRICE_TYPE_FIXED,
+                        isActive = true,
+                        usageLeft = usageLeft
         ))
         Assert.assertTrue(result == expectedResult)
     }
@@ -43,18 +45,43 @@ class PromoCalculatorServiceTest {
         val offerPrice = 1000.0
         val promoPrice = 100.0
         val offerCount = 2
+        val usageLeft = 1
 
         val expectedResult = offerPrice + promoPrice
 
         val result = calculator.countPrice(
                 generateOffers(offerCount, promoId, offerPrice),
                 PriceService.Promo(
-                    id = promoId,
-                    price = promoPrice,
-                    type = AirTablePromo.PROMO_TYPE_SINGLE,
-                    priceType = AirTablePromo.PRICE_TYPE_FIXED,
-                    isActive = true
+                        id = promoId,
+                        price = promoPrice,
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        priceType = AirTablePromo.PRICE_TYPE_FIXED,
+                        isActive = true,
+                        usageLeft = usageLeft
         ))
+        Assert.assertTrue(result == expectedResult)
+    }
+
+    @Test
+    fun `Calculator counts correct price for five offers and 3-usage limited fix price`() {
+        val promoId = "promo_1"
+        val offerPrice = 1000.0
+        val promoPrice = 100.0
+        val offerCount = 5
+        val usageLeft = 3
+
+        val expectedResult = usageLeft * promoPrice + (offerCount - usageLeft) * offerPrice
+
+        val result = calculator.countPrice(
+                generateOffers(offerCount, promoId, offerPrice),
+                PriceService.Promo(
+                        id = promoId,
+                        price = promoPrice,
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        priceType = AirTablePromo.PRICE_TYPE_FIXED,
+                        isActive = true,
+                        usageLeft = usageLeft
+                ))
         Assert.assertTrue(result == expectedResult)
     }
 
@@ -64,6 +91,7 @@ class PromoCalculatorServiceTest {
         val offerPrice = 1000.0
         val promoPrice = 100.0
         val offerCount = 2
+        val usageLeft = 1
 
         val expectedResult = promoPrice * offerCount
 
@@ -84,6 +112,7 @@ class PromoCalculatorServiceTest {
         val promoId = "promo_1"
         val offerPrice = 1000.0
         val promoPrice = 100.0
+        val usageLeft = 1
 
         val expectedResult = offerPrice - promoPrice
 
@@ -93,8 +122,9 @@ class PromoCalculatorServiceTest {
                         id = promoId,
                         price = promoPrice,
                         priceType = AirTablePromo.PRICE_TYPE_DECREASE,
-                        type = AirTablePromo.PROMO_TYPE_SINGLE,
-                        isActive = true
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        isActive = true,
+                        usageLeft = usageLeft
                 ))
         Assert.assertTrue(result == expectedResult)
     }
@@ -105,6 +135,7 @@ class PromoCalculatorServiceTest {
         val offerPrice = 1000.0
         val promoPrice = 100.0
         val offerCount = 2
+        val usageLeft = 1
 
         val expectedResult = offerPrice * offerCount - promoPrice
 
@@ -114,8 +145,32 @@ class PromoCalculatorServiceTest {
                         id = promoId,
                         price = promoPrice,
                         priceType = AirTablePromo.PRICE_TYPE_DECREASE,
-                        type = AirTablePromo.PROMO_TYPE_SINGLE,
-                        isActive = true
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        isActive = true,
+                        usageLeft = usageLeft
+                ))
+        Assert.assertTrue(result == expectedResult)
+    }
+
+    @Test
+    fun `Calculator counts correct price for five offers and 3-usage limited decrease price`() {
+        val promoId = "promo_1"
+        val offerPrice = 1000.0
+        val promoPrice = 100.0
+        val offerCount = 5
+        val usageLeft = 3
+
+        val expectedResult = usageLeft * (offerPrice - promoPrice) + (offerCount - usageLeft) * offerPrice
+
+        val result = calculator.countPrice(
+                generateOffers(offerCount, promoId, offerPrice),
+                PriceService.Promo(
+                        id = promoId,
+                        price = promoPrice,
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        priceType = AirTablePromo.PRICE_TYPE_DECREASE,
+                        isActive = true,
+                        usageLeft = usageLeft
                 ))
         Assert.assertTrue(result == expectedResult)
     }
@@ -126,6 +181,7 @@ class PromoCalculatorServiceTest {
         val offerPrice = 100.0
         val promoPrice = 1000.0
         val offerCount = 2
+        val usageLeft = 1
 
         val expectedResult = 0 + offerPrice
 
@@ -135,8 +191,9 @@ class PromoCalculatorServiceTest {
                         id = promoId,
                         price = promoPrice,
                         priceType = AirTablePromo.PRICE_TYPE_DECREASE,
-                        type = AirTablePromo.PROMO_TYPE_SINGLE,
-                        isActive = true
+                        type = AirTablePromo.PROMO_TYPE_LIMITED,
+                        isActive = true,
+                        usageLeft = usageLeft
                 ))
         Assert.assertTrue(result == expectedResult)
     }

@@ -23,7 +23,7 @@ class PriceService {
     }
 
     enum class PromoType(val typeName: String) {
-        SINGLE(AirTablePromo.PROMO_TYPE_SINGLE),
+        LIMITED(AirTablePromo.PROMO_TYPE_LIMITED),
         UNLIMITED(AirTablePromo.PROMO_TYPE_UNLIMITED)
     }
 
@@ -46,7 +46,9 @@ class PriceService {
             val priceType: String,
             val type: String,
             @JsonAlias(AirTablePromo.IS_ACTIVE)
-            val isActive: Boolean
+            val isActive: Boolean,
+            @JsonAlias(AirTablePromo.USAGE_LEFT)
+            val usageLeft: Int = 0
     )
 
     data class AirTableOfferResponse(
