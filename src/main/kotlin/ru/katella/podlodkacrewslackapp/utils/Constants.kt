@@ -8,7 +8,7 @@ class AirTableEndpoint {
         const val PRODUCT = "Products"
         const val OFFER = "Offers"
         const val ORDER = "Orders"
-        const val PARTICIPANT = "Participants"
+        const val PARTICIPANT = "Participant"
     }
 }
 
@@ -50,6 +50,14 @@ class AirTableOffer {
     }
 }
 
+class AirTableParticipant {
+    companion object {
+        const val EMAIL = "Email"
+        const val NAME = "Name"
+        const val SURNAME = "Surname"
+    }
+}
+
 class AirTableOrder {
     companion object {
         const val KASSA_ID = "kassa_order_id"
@@ -60,5 +68,8 @@ class AirTableOrder {
         const val INITIAL_PRICE = "initial_price"
         const val FINAL_PRICE = "final_price"
         const val KASSA_ORDER_STATUS = "kassa_order_status"
+        const val USED_PROMO = "used_promo"
+        const val OFFER = "offer"
+        const val PARTICIPANT = "participant"
     }
 }

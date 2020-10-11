@@ -72,6 +72,6 @@ class ProductService {
         val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
         val resultCount = result.records.count()
 
-        return resultCount == offerIds.count()
+        return resultCount == offerIds.distinct().count()
     }
 }
