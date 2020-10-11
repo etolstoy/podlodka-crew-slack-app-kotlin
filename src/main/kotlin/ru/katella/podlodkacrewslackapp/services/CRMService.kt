@@ -94,7 +94,7 @@ class CRMService {
         return r.statusCode == 200
     }
 
-    fun createParticipant(email: String, firstName: String?, lastName: String) {
+    fun createParticipant(email: String, firstName: String?, lastName: String?) {
         val map = mutableMapOf(
             AirTableParticipant.EMAIL to email
         )

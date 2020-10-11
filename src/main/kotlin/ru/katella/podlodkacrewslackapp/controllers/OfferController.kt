@@ -15,22 +15,19 @@ class OfferController {
 
     @GetMapping
     fun getProductList(@RequestParam(name = "product_type") type: String?, @RequestParam(name = "product_id") productId: String?): List<Map<String, Any>>? {
-        if (type != null) {
-            return offerService.obtainOffers(enumValueOf<ProductType>(type.toUpperCase())).map {
-                mapOffer(it)
-            }
-        }
         if (productId != null) {
             return offerService.obtainOffers(productId = productId).map {
                 mapOffer(it)
             }
         }
-        if (type == null && productId == null) {
-            return offerService.obtainOffers().map {
+        if (type != null) {
+            return offerService.obtainOffers(enumValueOf<ProductType>(type.toUpperCase())).map {
                 mapOffer(it)
             }
         }
-        return null
+        return offerService.obtainOffers().map {
+            mapOffer(it)
+        }
     }
 
     private fun mapOffer(offer: PriceService.Offer): Map<String, Any> = mapOf(

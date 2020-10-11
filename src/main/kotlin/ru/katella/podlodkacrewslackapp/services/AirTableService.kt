@@ -30,23 +30,21 @@ class AirTableService {
                 "Content-Type" to "application/json",
                 "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
         )
-        var jsonString = ""
+
         if (payload == null) {
             val r = get(
                 shopConfig.airtableUrl + urlPath,
                 headers = headers
             )
-            jsonString = r.jsonObject.toString()
+            return r.jsonObject.toString()
         } else {
             val r = get(
                 shopConfig.airtableUrl + urlPath,
                 params = payload,
                 headers = headers
             )
-            jsonString = r.jsonObject.toString()
+            return r.jsonObject.toString()
         }
-
-        return jsonString
     }
 
     fun makePatchRequest(urlPath: String, payload: Map<String, Any>): String {
