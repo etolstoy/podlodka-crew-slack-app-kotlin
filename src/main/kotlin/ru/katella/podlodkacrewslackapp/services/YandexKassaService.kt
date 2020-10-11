@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import khttp.get
 import khttp.post
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
@@ -12,6 +13,12 @@ import java.util.*
 
 @Service
 class YandexKassaService {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private data class KassaPaymentStatusResponse(
+        val id: String,
+        val status: String
+    )
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private data class KassaOrderResponse(
             val id: String,
@@ -36,10 +43,9 @@ class YandexKassaService {
             val confirmationUrl: String
     )
 
-    fun requestPaymentConfirmation(price: Number): Confirmation? {
-        val shopConfig = ShopConfig()
-        val authString: String = Base64.getEncoder().encodeToString("${shopConfig.yandexShopId}:${shopConfig.yandexSecretKey}".toByteArray())
+    val shopConfig = ShopConfig()
 
+    fun requestPaymentConfirmation(price: Number): Confirmation? {
         val payload = mapOf(
                 "amount" to mapOf(
                         "value" to price.toString(),
@@ -53,7 +59,7 @@ class YandexKassaService {
         )
         val headers = mapOf(
                 "Content-Type" to "application/json",
-                "Authorization" to "Basic $authString",
+                "Authorization" to "Basic ${kassaAuthString()}",
                 "Idempotence-Key" to java.util.UUID.randomUUID().toString()
         )
         val r = post(
@@ -74,4 +80,25 @@ class YandexKassaService {
         }
         return null
     }
+
+    fun getPaymentStatus(id: String): String? {
+        // https://kassa.yandex.ru/developers/api#get_payment
+        val headers = mapOf(
+            "Content-Type" to "application/json",
+            "Authorization" to "Basic ${kassaAuthString()}",
+            "Idempotence-Key" to java.util.UUID.randomUUID().toString()
+        )
+        val r = get(
+            shopConfig.kassaUrl + id,
+            headers = headers)
+        if (r.statusCode == 200) {
+            val jsonString = r.jsonObject.toString()
+            val mapper = ObjectMapper().registerKotlinModule()
+            val result = mapper.readValue<KassaPaymentStatusResponse>(jsonString)
+            return result.status
+        }
+        return null
+    }
+
+    private fun kassaAuthString() = Base64.getEncoder().encodeToString("${shopConfig.yandexShopId}:${shopConfig.yandexSecretKey}".toByteArray())
 }

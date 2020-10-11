@@ -7,6 +7,6 @@ class ShopConfig() {
     val airtableSecretKey: String? = System.getenv("AIRTABLE_SECRET_KEY")
 
     // Urls
-    val kassaUrl: String = "https://payment.yandex.net/api/v3/payments"
+    val kassaUrl: String = "https://payment.yandex.net/api/v3/payments/"
     val airtableUrl: String = "https://api.airtable.com/v0/appcXwnPZmx46EEJ1/"
 }

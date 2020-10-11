@@ -29,16 +29,19 @@ class OrderCacheService {
             var offerId: String
     )
 
+    fun obtainCachedOrders(): List<Order> = orderRepository.findAll()
+
     fun cacheOrder(orderBag: OrderBag, confirmationId: String) {
         if (orderBag.orders != null) {
             orderBag.orders.forEach {
                 orderRepository.saveAndFlush(Order(
-                        confirmationId,
-                        orderBag.customerEmail,
-                        it.firstName,
-                        it.lastName,
-                        it.email,
-                        it.offerId
+                        id = java.util.UUID.randomUUID().toString(),
+                        confirmationId = confirmationId,
+                        customerEmail = orderBag.customerEmail,
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        email = it.email,
+                        offerId = it.offerId
                 ))
             }
         }
