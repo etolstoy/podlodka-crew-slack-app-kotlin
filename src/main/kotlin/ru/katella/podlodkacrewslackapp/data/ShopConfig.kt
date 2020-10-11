@@ -8,5 +8,5 @@ class ShopConfig() {
 
     // Urls
     val kassaUrl: String = "https://payment.yandex.net/api/v3/payments/"
-    val airtableUrl: String = "https://api.airtable.com/v0/appcXwnPZmx46EEJ1/"
+    val airtableUrl: String = "https://api.airtable.com/v0/appAec9VCWrRQ1KOW/"
 }

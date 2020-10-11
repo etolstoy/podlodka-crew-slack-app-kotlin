@@ -7,25 +7,26 @@ class AirTableEndpoint {
         const val PROMO = "Promocodes"
         const val PRODUCT = "Products"
         const val OFFER = "Offers"
-        const val USER = "Users"
+        const val ORDER = "Orders"
+        const val PARTICIPANT = "Participants"
     }
 }
 
 class AirTableCommon {
     companion object {
-        const val RECORD_PAYLOAD = "fields"
+        const val FIELDS_PAYLOAD = "fields"
         const val FILTER_KEYWORD = "filterByFormula"
+        const val RECORDS_KEYWORD = "records"
     }
 }
 
 class AirTableProduct {
     companion object {
         const val ID = "id"
-        const val NAME = "Name"
+        const val NAME = "name"
         const val TYPE = "product_type"
-        const val LINK = "link_to_product"
+        const val LINK = "link"
         const val ACTIVE_OFFERS = "active_offers"
-        const val OFFER_PRICE = "offer_price"
     }
 }
 

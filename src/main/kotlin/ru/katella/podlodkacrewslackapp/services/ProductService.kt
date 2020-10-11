@@ -29,7 +29,7 @@ class ProductService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Record(
             val id: String,
-            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
             val product: Product
     )
 
@@ -44,14 +44,12 @@ class ProductService {
             @JsonAlias(AirTableProduct.LINK)
             val link: String?,
             @JsonAlias(AirTableProduct.ACTIVE_OFFERS)
-            val offerIds: List<String>,
-            @JsonAlias(AirTableProduct.OFFER_PRICE)
-            val offerPrices: List<Number>
+            val offerIds: List<String>
     )
 
     fun obtainProducts(type: ProductType): List<Product> {
         val payload = mapOf(
-                AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase().capitalize()}'"
+                AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase()}'"
         )
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PRODUCT, payload)
 

@@ -34,7 +34,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PromoRecord(
             val id: String,
-            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
             val promo: Promo
     )
 
@@ -58,7 +58,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class OfferRecord(
             val id: String,
-            @JsonAlias(AirTableCommon.RECORD_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
             val offer: Offer
     )
 
@@ -101,11 +101,11 @@ class PriceService {
         val record = getPromoRecord(promo)
         if (record != null) {
             val payload = mapOf(
-                    "records" to listOf<Map<String, Any>>(
+                    AirTableCommon.RECORDS_KEYWORD to listOf<Map<String, Any>>(
                             mapOf(
-                                    "id" to record.id,
-                                    "fields" to mapOf<String, Int>(
-                                            "usage_left" to usageLeft
+                                    AirTablePromo.ID to record.id,
+                                    AirTableCommon.FIELDS_PAYLOAD to mapOf<String, Int>(
+                                            AirTablePromo.USAGE_LEFT to usageLeft
                                     )
                             )
                     )
