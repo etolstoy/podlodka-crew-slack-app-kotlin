@@ -28,10 +28,11 @@ class KassaPollingTasks {
 
         // Проверяем статус этих запросов у Яндекс Кассы
         orders.forEach {
+            println(it)
             val status = kassaService.getPaymentStatus(it.confirmationId)
             if (status == "cancelled" || status == "succeeded") {
                 // В этом случае надо создать запись в AirTable, чтобы пользователю отправилось письмо
-                orderCreateService.createOrder(it)
+//                orderCreateService.createOrder(it)
 
                 // Удаляем запись из кэша
             }

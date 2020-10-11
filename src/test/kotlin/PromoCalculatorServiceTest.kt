@@ -1,17 +1,8 @@
-import com.slack.api.methods.response.reactions.ReactionsGetResponse
-import com.slack.api.model.MatchedItem
-import com.slack.api.model.Reaction
 import org.junit.Assert
 import org.junit.Test
-import ru.katella.podlodkacrewslackapp.data.slack.SessionStatsBuilder
-import ru.katella.podlodkacrewslackapp.data.slack.isUseful
 import ru.katella.podlodkacrewslackapp.services.PriceService
-import ru.katella.podlodkacrewslackapp.services.ProcessingService.Companion.TRIGGERING_REACTIONS
 import ru.katella.podlodkacrewslackapp.services.PromoCalculatorService
-import ru.katella.podlodkacrewslackapp.services.SlackService.MessageWithReactions
 import ru.katella.podlodkacrewslackapp.utils.AirTablePromo
-import java.io.File
-import java.nio.charset.Charset
 
 
 class PromoCalculatorServiceTest {
@@ -36,7 +27,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
         ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
         Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
@@ -60,7 +51,12 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
         ))
-        Assert.assertTrue(result.price == expectedResult)
+        val firstPromoOffer = result.promoOffers[0]
+        val lastPromoOffer = result.promoOffers[1]
+
+        Assert.assertTrue(result.bulkPrice == expectedResult)
+        Assert.assertTrue(firstPromoOffer.promoPrice == promoPrice)
+        Assert.assertTrue(lastPromoOffer.promoPrice == offerPrice)
         Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
@@ -84,7 +80,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
         Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
@@ -107,7 +103,7 @@ class PromoCalculatorServiceTest {
                     type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                     isActive = true
         ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
         Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
@@ -130,7 +126,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
         Assert.assertTrue(result.promoUsageLeft == 0)
     }
 
@@ -154,7 +150,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     @Test
@@ -177,7 +173,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     @Test
@@ -200,7 +196,7 @@ class PromoCalculatorServiceTest {
                         isActive = true,
                         usageLeft = usageLeft
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     @Test
@@ -221,7 +217,12 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = true
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        val firstPromoOffer = result.promoOffers[0]
+        val lastPromoOffer = result.promoOffers[1]
+
+        Assert.assertTrue(result.bulkPrice == expectedResult)
+        Assert.assertTrue(firstPromoOffer.promoPrice == offerPrice - promoPrice)
+        Assert.assertTrue(lastPromoOffer.promoPrice == offerPrice - promoPrice)
     }
 
     @Test
@@ -242,7 +243,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = true
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     @Test
@@ -262,7 +263,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = false
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     @Test
@@ -282,7 +283,7 @@ class PromoCalculatorServiceTest {
                         type = AirTablePromo.PROMO_TYPE_UNLIMITED,
                         isActive = false
                 ))
-        Assert.assertTrue(result.price == expectedResult)
+        Assert.assertTrue(result.bulkPrice == expectedResult)
     }
 
     private fun generateOffers(count: Int, promoId: String, price: Number): List<PriceService.Offer> {

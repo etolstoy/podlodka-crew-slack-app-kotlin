@@ -77,7 +77,7 @@ class PriceService {
                 offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
                 ")"
         val payload = mapOf(
-                AirTableCommon.FILTER_KEYWORD to offerIdString
+            AirTableCommon.FILTER_KEYWORD to offerIdString
         )
 
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
@@ -115,7 +115,7 @@ class PriceService {
         }
     }
 
-    private fun getPromo(id: String?): Promo? {
+    fun getPromo(id: String?): Promo? {
         val record = getPromoRecord(id)
         return record?.promo
     }

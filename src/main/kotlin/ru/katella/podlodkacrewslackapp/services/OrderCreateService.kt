@@ -3,7 +3,6 @@ package ru.katella.podlodkacrewslackapp.services
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.repositories.Order
-import ru.katella.podlodkacrewslackapp.utils.AirTableEndpoint
 
 @Service
 class OrderCreateService {
@@ -43,7 +42,7 @@ class OrderCreateService {
                 mapOf(
                     "fields" to mapOf<String, String>(
                         "OrderId" to order.confirmationId,
-                        "Amount" to order.amount,
+                        "Amount" to order.initialPrice,
 
                         "email" to order.customerEmail
                     )
