@@ -13,21 +13,21 @@ import ru.katella.podlodkacrewslackapp.utils.AirTableOffer
 import ru.katella.podlodkacrewslackapp.utils.AirTableProduct
 
 @Service
-class ProductService {
+class OfferService {
     @Autowired
     lateinit var airTableService: AirTableService
 
     enum class ProductType() {
-        EVENT,
+        CONFERENCE,
         PLAYLIST
     }
 
-    data class AirTableResponse(
-            val records: List<Record>
+    data class AirTableProductResponse(
+            val records: List<ProductRecord>
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class Record(
+    data class ProductRecord(
             val id: String,
             @JsonAlias(AirTableCommon.FIELDS)
             val product: Product
@@ -47,16 +47,31 @@ class ProductService {
             val offerIds: List<String>
     )
 
-    fun obtainProducts(type: ProductType): List<Product> {
-        val payload = mapOf(
-                AirTableCommon.FILTER_BY to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase()}'"
-        )
-        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PRODUCT, payload)
-
+    fun obtainOffers(): List<PriceService.Offer> {
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, null)
         val mapper = ObjectMapper().registerKotlinModule()
+        val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
+        return result.records.map { it.offer }
+    }
 
-        val result = mapper.readValue<AirTableResponse>(jsonString)
-        return result.records.map { it.product }
+    fun obtainOffers(type: ProductType): List<PriceService.Offer> {
+        val payload = mapOf(
+                AirTableCommon.FILTER_BY to "{${AirTableOffer.PRODUCT_TYPE}} = '${type.name.toLowerCase()}'"
+        )
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
+        val mapper = ObjectMapper().registerKotlinModule()
+        val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
+        return result.records.map { it.offer }
+    }
+
+    fun obtainOffers(productId: String): List<PriceService.Offer> {
+        val payload = mapOf(
+            AirTableCommon.FILTER_BY to "{${AirTableOffer.PRODUCT_ID}} = '${productId}'"
+        )
+        val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
+        val mapper = ObjectMapper().registerKotlinModule()
+        val result = mapper.readValue<PriceService.AirTableOfferResponse>(jsonString)
+        return result.records.map { it.offer }
     }
 
     fun validateOffers(offerIds: List<String>): Boolean {

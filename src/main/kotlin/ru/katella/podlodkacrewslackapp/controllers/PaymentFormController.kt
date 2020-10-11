@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.*
 import ru.katella.podlodkacrewslackapp.data.repositories.Order
 import ru.katella.podlodkacrewslackapp.services.OrderCacheService
 import ru.katella.podlodkacrewslackapp.services.PriceService
-import ru.katella.podlodkacrewslackapp.services.ProductService
+import ru.katella.podlodkacrewslackapp.services.OfferService
 import ru.katella.podlodkacrewslackapp.services.YandexKassaService
 
 @RestController
 @RequestMapping("/buy")
 class PaymentFormController {
     @Autowired
-    lateinit var productService: ProductService
+    lateinit var offerService: OfferService
 
     @Autowired
     lateinit var priceService: PriceService
@@ -53,7 +53,7 @@ class PaymentFormController {
         val offerIds = orderBag.orders?.map { it.offerId }
 
         // Проверяем, что все офферы существуют
-        if (offerIds == null || offerIds.count() == 0 || productService.validateOffers(offerIds) == false) {
+        if (offerIds == null || offerIds.count() == 0 || offerService.validateOffers(offerIds) == false) {
             return mapOf(
                     "Error" to "You passed invalid offerIds"
             )

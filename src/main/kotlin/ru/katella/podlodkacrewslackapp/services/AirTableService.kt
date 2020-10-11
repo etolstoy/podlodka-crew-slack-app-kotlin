@@ -24,18 +24,28 @@ class AirTableService {
             val payload: T
     )
 
-    fun makeGetRequest(urlPath: String, payload: Map<String, String>): String {
+    fun makeGetRequest(urlPath: String, payload: Map<String, String>?): String {
         val shopConfig = ShopConfig()
         val headers = mapOf(
                 "Content-Type" to "application/json",
                 "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
         )
-        val r = get(
+        var jsonString = ""
+        if (payload == null) {
+            val r = get(
+                shopConfig.airtableUrl + urlPath,
+                headers = headers
+            )
+            jsonString = r.jsonObject.toString()
+        } else {
+            val r = get(
                 shopConfig.airtableUrl + urlPath,
                 params = payload,
                 headers = headers
-        )
-        val jsonString = r.jsonObject.toString()
+            )
+            jsonString = r.jsonObject.toString()
+        }
+
         return jsonString
     }
 

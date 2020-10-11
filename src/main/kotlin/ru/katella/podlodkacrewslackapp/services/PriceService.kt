@@ -67,7 +67,13 @@ class PriceService {
             val id: String,
             val price: Number,
             @JsonAlias(AirTableOffer.ACTIVE_PROMO)
-            val activePromoIds: List<String>?
+            val activePromoIds: List<String>?,
+            @JsonAlias(AirTableOffer.PRODUCT_NAME)
+            val productName: List<String>,
+            @JsonAlias(AirTableOffer.PRODUCT_ID)
+            val productId: List<String>,
+            @JsonAlias(AirTableOffer.PRODUCT_TYPE)
+            val productType: List<String>
     )
 
     // Здесь мы рассчитываем цену, которую должен заплатить покупатель с учетом своих промокодов

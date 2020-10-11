@@ -47,6 +47,9 @@ class AirTableOffer {
     companion object {
         const val ID = "id"
         const val ACTIVE_PROMO = "active_promo_ids"
+        const val PRODUCT_NAME = "product_name"
+        const val PRODUCT_ID = "product_id"
+        const val PRODUCT_TYPE = "product_type"
     }
 }
 
