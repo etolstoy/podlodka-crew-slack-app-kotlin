@@ -59,5 +59,6 @@ class AirTableOrder {
         const val EMAIL = "recepient_email"
         const val INITIAL_PRICE = "initial_price"
         const val FINAL_PRICE = "final_price"
+        const val KASSA_ORDER_STATUS = "kassa_order_status"
     }
 }

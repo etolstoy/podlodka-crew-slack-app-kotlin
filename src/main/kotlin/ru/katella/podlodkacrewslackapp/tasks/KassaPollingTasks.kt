@@ -46,7 +46,7 @@ class KassaPollingTasks {
                 println(status + " " + it)
                 // В этом случае надо создать занести в базу все новые записи – Order, Participant, Ticket
                 kassaOrders[it]?.forEach { order ->
-                    if (crmService.createOrder(order)) {
+                    if (crmService.createOrder(order, status)) {
                         orderCacheService.removeOrder(order)
                     }
                 }

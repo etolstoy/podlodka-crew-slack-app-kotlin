@@ -12,7 +12,7 @@ class CRMService {
     @Autowired
     lateinit var airTableService: AirTableService
 
-    fun createOrder(order: Order): Boolean {
+    fun createOrder(order: Order, status: String): Boolean {
         // Достаем или создаем Participant
 
         // Достаем Offer
@@ -30,7 +30,8 @@ class CRMService {
                         AirTableOrder.LAST_NAME to order.lastName,
                         AirTableOrder.EMAIL to order.email,
                         AirTableOrder.INITIAL_PRICE to order.initialPrice,
-                        AirTableOrder.FINAL_PRICE to order.finalPrice
+                        AirTableOrder.FINAL_PRICE to order.finalPrice,
+                        AirTableOrder.KASSA_ORDER_STATUS to status
                     )
                 )
             )
