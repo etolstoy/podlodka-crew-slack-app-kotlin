@@ -34,21 +34,4 @@ class OrderCacheService {
             }
         }
     }
-
-    fun cacheOrder(bulkOrder: BulkOrder, confirmationId: String, amount: String) {
-//        if (bulkOrder.orders != null) {
-//            bulkOrder.orders.forEach {
-//                orderRepository.saveAndFlush(Order(
-//                        id = java.util.UUID.randomUUID().toString(),
-//                        confirmationId = confirmationId,
-//                        customerEmail = bulkOrder.customerEmail,
-//                        firstName = it.firstName,
-//                        lastName = it.lastName,
-//                        email = it.email,
-//                        offerId = it.offerId,
-//                        initialPrice = amount
-//                ))
-//            }
-//        }
-    }
 }

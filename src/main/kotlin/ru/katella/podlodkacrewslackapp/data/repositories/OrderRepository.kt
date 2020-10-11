@@ -25,5 +25,6 @@ data class Order(
     var email: String,
     var offerId: String,
     var initialPrice: String,
-    var resultPrice: String
+    var resultPrice: String,
+    var usedPromo: String
 )

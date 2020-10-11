@@ -5,11 +5,31 @@ import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.repositories.Order
 
 @Service
-class OrderCreateService {
+class CRMService {
     @Autowired
     lateinit var airTableService: AirTableService
 
     fun createOrder(order: Order) {
+        // Достаем или создаем Participant
+
+        // Достаем Offer
+
+        // Достаем Promo
+
+        // Создаем всю сущность
+//        val orderPayload = mapOf(
+//            "records" to listOf<Map<String, Any>>(
+//                mapOf(
+//                    "fields" to mapOf<String, String>(
+//                        "OrderId" to order.confirmationId,
+//                        "Amount" to order.initialPrice,
+//
+//                        "email" to order.customerEmail
+//                    )
+//                )
+//            )
+//        )
+
 //        // Сохраняем Recepient в Users
 //        val recepientPayload = mapOf(
 //            "records" to listOf<Map<String, Any>>(
@@ -37,18 +57,18 @@ class OrderCreateService {
 //        airTableService.makePostRequest(AirTableEndpoint.USER, customerPayload)
 
         // Сохраняем отдельные ордеры в Orders
-        val orderPayload = mapOf(
-            "records" to listOf<Map<String, Any>>(
-                mapOf(
-                    "fields" to mapOf<String, String>(
-                        "OrderId" to order.confirmationId,
-                        "Amount" to order.initialPrice,
-
-                        "email" to order.customerEmail
-                    )
-                )
-            )
-        )
+//        val orderPayload = mapOf(
+//            "records" to listOf<Map<String, Any>>(
+//                mapOf(
+//                    "fields" to mapOf<String, String>(
+//                        "OrderId" to order.confirmationId,
+//                        "Amount" to order.initialPrice,
+//
+//                        "email" to order.customerEmail
+//                    )
+//                )
+//            )
+//        )
 
         // Сохраняем весь заказ в KassaOrder
     }
