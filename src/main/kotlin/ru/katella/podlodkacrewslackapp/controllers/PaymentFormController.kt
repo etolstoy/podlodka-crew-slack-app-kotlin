@@ -96,8 +96,8 @@ class PaymentFormController {
                 lastName = it.lastName,
                 email = it.email,
                 offerId = it.offerId,
-                initialPrice = promoOffer.offer.price.toString(),
-                resultPrice = promoOffer.promoPrice.toString(),
+                initialPrice = promoOffer.offer.price,
+                finalPrice = promoOffer.promoPrice,
                 usedPromo = orderBag.promo
             )
         }

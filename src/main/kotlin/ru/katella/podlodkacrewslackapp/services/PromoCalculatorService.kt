@@ -32,7 +32,6 @@ class PromoCalculatorService {
         // Затем идем по всем событиям и проверяем, что у оффера есть промокод с таким айди
         if (promo != null) {
             if (promo.isActive == false) {
-                println("Промокод не активен")
                 return OrderPrice(bulkPrice = allOffersPrice, promoUsageLeft = availablePromoUses, promoOffers = promoOffers)
             }
 
@@ -50,7 +49,6 @@ class PromoCalculatorService {
                     // Если тип – Decrease, то уменьшаем стоимость предмета на эту сумму, но чекаем на то, что не меньше нуля
                     if (promo.priceType == PriceService.PromoPriceType.DECREASE.typeName) {
                         var resultPrice = it.offer.price.toDouble() - promo.price.toDouble()
-                        println(resultPrice)
                         if (resultPrice < 0) {
                             resultPrice = 0.0
                         }

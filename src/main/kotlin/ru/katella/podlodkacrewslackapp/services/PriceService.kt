@@ -34,7 +34,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PromoRecord(
             val id: String,
-            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS)
             val promo: Promo
     )
 
@@ -58,7 +58,7 @@ class PriceService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class OfferRecord(
             val id: String,
-            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS)
             val offer: Offer
     )
 
@@ -77,7 +77,7 @@ class PriceService {
                 offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
                 ")"
         val payload = mapOf(
-            AirTableCommon.FILTER_KEYWORD to offerIdString
+            AirTableCommon.FILTER_BY to offerIdString
         )
 
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
@@ -101,10 +101,10 @@ class PriceService {
         val record = getPromoRecord(promo)
         if (record != null) {
             val payload = mapOf(
-                    AirTableCommon.RECORDS_KEYWORD to listOf<Map<String, Any>>(
+                    AirTableCommon.RECORDS to listOf<Map<String, Any>>(
                             mapOf(
                                     AirTablePromo.ID to record.id,
-                                    AirTableCommon.FIELDS_PAYLOAD to mapOf<String, Int>(
+                                    AirTableCommon.FIELDS to mapOf<String, Int>(
                                             AirTablePromo.USAGE_LEFT to usageLeft
                                     )
                             )
@@ -125,7 +125,7 @@ class PriceService {
             return null
         }
         val payload = mapOf(
-                AirTableCommon.FILTER_KEYWORD to "{${AirTablePromo.ID}} = '$id'"
+                AirTableCommon.FILTER_BY to "{${AirTablePromo.ID}} = '$id'"
         )
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PROMO, payload)
         val mapper = ObjectMapper().registerKotlinModule()

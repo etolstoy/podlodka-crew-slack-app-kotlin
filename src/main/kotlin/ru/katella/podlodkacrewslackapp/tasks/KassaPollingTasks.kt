@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
+import ru.katella.podlodkacrewslackapp.data.repositories.Order
 import ru.katella.podlodkacrewslackapp.services.OrderCacheService
 import ru.katella.podlodkacrewslackapp.services.CRMService
 import ru.katella.podlodkacrewslackapp.services.YandexKassaService
@@ -24,18 +25,36 @@ class KassaPollingTasks {
     fun pollForStatusUpdates() {
         // Проверяем, что есть pending запросы в нашей базе
         val orders = orderCacheService.obtainCachedOrders()
-
-        // Проверяем статус этих запросов у Яндекс Кассы
-        orders.forEach {
-            val status = kassaService.getPaymentStatus(it.confirmationId)
-            if (status == "cancelled" || status == "succeeded") {
-                // В этом случае надо создать занести в базу все новые записи – Order, Participant, Ticket
-
-
-                // Удаляем запись из кэша
-            }
+        if (orders == null || orders.count() == 0) {
+            return
         }
 
+        // Группируем по ID заказа кассы, чтобы апдейтить все одним махом
+        val kassaOrders = mutableMapOf<String, MutableList<Order>>()
+        orders.forEach {
+            if (kassaOrders[it.confirmationId] == null) {
+                kassaOrders[it.confirmationId] = mutableListOf()
+            }
+            kassaOrders[it.confirmationId]?.add(it)
+        }
+
+        // Проверяем статус этих запросов у Яндекс Кассы
+        kassaOrders.keys.forEach {
+            val status = kassaService.getPaymentStatus(it)
+            println(status)
+            if (status == "cancelled" || status == "succeeded") {
+                println(status + " " + it)
+                // В этом случае надо создать занести в базу все новые записи – Order, Participant, Ticket
+                kassaOrders[it]?.forEach { order ->
+                    if (crmService.createOrder(order)) {
+                        orderCacheService.removeOrder(order)
+                    }
+                }
+
+                // Удаляем записи из кэша
+
+            }
+        }
     }
 
     // TODO: отдельно надо чекать синк кассы и эйртейбла

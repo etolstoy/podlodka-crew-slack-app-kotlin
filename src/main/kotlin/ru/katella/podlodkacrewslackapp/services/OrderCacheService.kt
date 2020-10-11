@@ -34,4 +34,8 @@ class OrderCacheService {
             }
         }
     }
+
+    fun removeOrder(order: Order) {
+        orderRepository.delete(order)
+    }
 }

@@ -14,9 +14,9 @@ class AirTableEndpoint {
 
 class AirTableCommon {
     companion object {
-        const val FIELDS_PAYLOAD = "fields"
-        const val FILTER_KEYWORD = "filterByFormula"
-        const val RECORDS_KEYWORD = "records"
+        const val FIELDS = "fields"
+        const val FILTER_BY = "filterByFormula"
+        const val RECORDS = "records"
     }
 }
 
@@ -47,5 +47,17 @@ class AirTableOffer {
     companion object {
         const val ID = "id"
         const val ACTIVE_PROMO = "active_promo_ids"
+    }
+}
+
+class AirTableOrder {
+    companion object {
+        const val KASSA_ID = "kassa_order_id"
+        const val CUSTOMER_EMAIL = "customer_email"
+        const val FIRST_NAME = "recepient_first_name"
+        const val LAST_NAME = "recepient_last_name"
+        const val EMAIL = "recepient_email"
+        const val INITIAL_PRICE = "initial_price"
+        const val FINAL_PRICE = "final_price"
     }
 }

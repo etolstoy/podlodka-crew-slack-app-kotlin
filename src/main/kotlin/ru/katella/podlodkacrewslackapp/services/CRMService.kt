@@ -3,13 +3,16 @@ package ru.katella.podlodkacrewslackapp.services
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.repositories.Order
+import ru.katella.podlodkacrewslackapp.utils.AirTableCommon
+import ru.katella.podlodkacrewslackapp.utils.AirTableEndpoint
+import ru.katella.podlodkacrewslackapp.utils.AirTableOrder
 
 @Service
 class CRMService {
     @Autowired
     lateinit var airTableService: AirTableService
 
-    fun createOrder(order: Order) {
+    fun createOrder(order: Order): Boolean {
         // Достаем или создаем Participant
 
         // Достаем Offer
@@ -17,59 +20,24 @@ class CRMService {
         // Достаем Promo
 
         // Создаем всю сущность
-//        val orderPayload = mapOf(
-//            "records" to listOf<Map<String, Any>>(
-//                mapOf(
-//                    "fields" to mapOf<String, String>(
-//                        "OrderId" to order.confirmationId,
-//                        "Amount" to order.initialPrice,
-//
-//                        "email" to order.customerEmail
-//                    )
-//                )
-//            )
-//        )
+        val orderPayload = mapOf(
+            AirTableCommon.RECORDS to listOf<Map<String, Any>>(
+                mapOf(
+                    AirTableCommon.FIELDS to mapOf<String, Any>(
+                        AirTableOrder.KASSA_ID to order.confirmationId,
+                        AirTableOrder.CUSTOMER_EMAIL to order.customerEmail,
+                        AirTableOrder.FIRST_NAME to order.firstName,
+                        AirTableOrder.LAST_NAME to order.lastName,
+                        AirTableOrder.EMAIL to order.email,
+                        AirTableOrder.INITIAL_PRICE to order.initialPrice,
+                        AirTableOrder.FINAL_PRICE to order.finalPrice
+                    )
+                )
+            )
+        )
+        println(orderPayload)
+        val r = airTableService.makePostRequest(AirTableEndpoint.ORDER, orderPayload)
 
-//        // Сохраняем Recepient в Users
-//        val recepientPayload = mapOf(
-//            "records" to listOf<Map<String, Any>>(
-//                mapOf(
-//                    "fields" to mapOf<String, String>(
-//                        "email" to order.email,
-//                        "first_name" to order.firstName,
-//                        "last_name" to order.lastName
-//                    )
-//                )
-//            )
-//        )
-//        airTableService.makePostRequest(AirTableEndpoint.USER, recepientPayload)
-//
-//        // Сохраняем Customer в Users
-//        val customerPayload = mapOf(
-//            "records" to listOf<Map<String, Any>>(
-//                mapOf(
-//                    "fields" to mapOf<String, String>(
-//                        "email" to order.customerEmail
-//                    )
-//                )
-//            )
-//        )
-//        airTableService.makePostRequest(AirTableEndpoint.USER, customerPayload)
-
-        // Сохраняем отдельные ордеры в Orders
-//        val orderPayload = mapOf(
-//            "records" to listOf<Map<String, Any>>(
-//                mapOf(
-//                    "fields" to mapOf<String, String>(
-//                        "OrderId" to order.confirmationId,
-//                        "Amount" to order.initialPrice,
-//
-//                        "email" to order.customerEmail
-//                    )
-//                )
-//            )
-//        )
-
-        // Сохраняем весь заказ в KassaOrder
+        return r.statusCode == 200
     }
 }

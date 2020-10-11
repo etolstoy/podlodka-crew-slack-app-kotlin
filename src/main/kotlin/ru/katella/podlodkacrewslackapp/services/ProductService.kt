@@ -29,7 +29,7 @@ class ProductService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Record(
             val id: String,
-            @JsonAlias(AirTableCommon.FIELDS_PAYLOAD)
+            @JsonAlias(AirTableCommon.FIELDS)
             val product: Product
     )
 
@@ -49,7 +49,7 @@ class ProductService {
 
     fun obtainProducts(type: ProductType): List<Product> {
         val payload = mapOf(
-                AirTableCommon.FILTER_KEYWORD to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase()}'"
+                AirTableCommon.FILTER_BY to "{${AirTableProduct.TYPE}} = '${type.name.toLowerCase()}'"
         )
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.PRODUCT, payload)
 
@@ -65,7 +65,7 @@ class ProductService {
                 offerIds.joinToString(separator = ", ") { "{${AirTableOffer.ID}} = '$it'" } +
                 ")"
         val payload = mapOf(
-                AirTableCommon.FILTER_KEYWORD to offerIdString
+                AirTableCommon.FILTER_BY to offerIdString
         )
         val jsonString = airTableService.makeGetRequest(AirTableEndpoint.OFFER, payload)
         val mapper = ObjectMapper().registerKotlinModule()
