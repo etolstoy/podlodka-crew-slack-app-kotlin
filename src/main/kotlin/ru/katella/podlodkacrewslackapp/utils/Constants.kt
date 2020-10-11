@@ -7,6 +7,7 @@ class AirTableEndpoint {
         const val PROMO = "Promocodes"
         const val PRODUCT = "Products"
         const val OFFER = "Offers"
+        const val USER = "Users"
     }
 }
 

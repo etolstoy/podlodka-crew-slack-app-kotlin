@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import khttp.get
 import khttp.patch
+import khttp.post
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import ru.katella.podlodkacrewslackapp.data.ShopConfig
@@ -51,6 +52,21 @@ class AirTableService {
                 shopConfig.airtableUrl + urlPath,
                 data = JSONObject(payload),
                 headers = headers
+        )
+        val jsonString = r.jsonObject.toString()
+        return jsonString
+    }
+
+    fun makePostRequest(urlPath: String, payload: Map<String, Any>): String {
+        val shopConfig = ShopConfig()
+        val headers = mapOf(
+            "Content-Type" to "application/json",
+            "Authorization" to "Bearer ${shopConfig.airtableSecretKey}"
+        )
+        val r = post(
+            shopConfig.airtableUrl + urlPath,
+            data = JSONObject(payload),
+            headers = headers
         )
         val jsonString = r.jsonObject.toString()
         return jsonString

@@ -65,7 +65,11 @@ class PaymentFormController {
         priceService.updatePromoUsage(orderBag.promo, orderPrice.promoUsageLeft)
 
         // Сохраняем статус заказа в локальный кеш
-        orderCacheService.cacheOrder(orderBag, confirmation.id)
+        orderBag.orders.forEach {order ->
+//            val offer = orderPrice.updatedOffers.filter { it.id == order.offerId }.first()
+//            it.price =
+        }
+        orderCacheService.cacheOrder(orderBag, confirmation.id, confirmation.amount)
 
         // Возвращаем фронту ссылку на форму оплаты, а статус заказа сохраняем в кэше
         return mapOf(

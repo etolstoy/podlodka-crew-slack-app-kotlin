@@ -26,12 +26,13 @@ class OrderCacheService {
             var lastName: String,
             var email: String,
             @JsonAlias("offer_id")
-            var offerId: String
+            var offerId: String,
+            var price: String?
     )
 
     fun obtainCachedOrders(): List<Order> = orderRepository.findAll()
 
-    fun cacheOrder(orderBag: OrderBag, confirmationId: String) {
+    fun cacheOrder(orderBag: OrderBag, confirmationId: String, amount: String) {
         if (orderBag.orders != null) {
             orderBag.orders.forEach {
                 orderRepository.saveAndFlush(Order(
@@ -41,7 +42,8 @@ class OrderCacheService {
                         firstName = it.firstName,
                         lastName = it.lastName,
                         email = it.email,
-                        offerId = it.offerId
+                        offerId = it.offerId,
+                        amount = amount
                 ))
             }
         }

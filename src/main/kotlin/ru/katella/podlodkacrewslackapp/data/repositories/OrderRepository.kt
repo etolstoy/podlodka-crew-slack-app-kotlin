@@ -23,5 +23,6 @@ data class Order(
     var firstName: String,
     var lastName: String,
     var email: String,
-    var offerId: String
+    var offerId: String,
+    var amount: String
 )

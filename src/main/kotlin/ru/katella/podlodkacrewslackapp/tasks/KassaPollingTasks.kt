@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import ru.katella.podlodkacrewslackapp.services.OrderCacheService
+import ru.katella.podlodkacrewslackapp.services.OrderCreateService
 import ru.katella.podlodkacrewslackapp.services.YandexKassaService
 
 @Configuration
@@ -17,20 +18,22 @@ class KassaPollingTasks {
     @Autowired
     lateinit var kassaService: YandexKassaService
 
+    @Autowired
+    lateinit var orderCreateService: OrderCreateService
+
     @Scheduled(fixedRate = 5000)
     fun pollForStatusUpdates() {
         // Проверяем, что есть pending запросы в нашей базе
         val orders = orderCacheService.obtainCachedOrders()
-        val orderIds = orders.map { it.confirmationId }
 
         // Проверяем статус этих запросов у Яндекс Кассы
-        orderIds.forEach {
-            val status = kassaService.getPaymentStatus(it)
+        orders.forEach {
+            val status = kassaService.getPaymentStatus(it.confirmationId)
             if (status == "cancelled" || status == "succeeded") {
                 // В этом случае надо создать запись в AirTable, чтобы пользователю отправилось письмо
-                println(status)
-                // Удаляем запись из кэша
+                orderCreateService.createOrder(it)
 
+                // Удаляем запись из кэша
             }
         }
 
